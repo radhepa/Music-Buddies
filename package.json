@@ -1,7 +1,8 @@
 {
-  "name": "catching-days-sara",
+  "name": "music-buddies",
+  "productName": "Music Buddies",
   "version": "1.0.0",
-  "description": "Sara, a music kappa for your desktop: drop songs on her, make playlists, and listen to YouTube without the feed.",
+  "description": "Music Buddies: a yokai for your desktop who plays your music. drop songs on her, make playlists, and listen to YouTube without the feed.",
   "main": "main.js",
   "private": true,
   "scripts": {

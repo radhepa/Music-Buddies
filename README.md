@@ -1,10 +1,10 @@
-# Sara, the music kappa
+# Music Buddies
 
-A companion to the desktop toad, drawn in the same hand: a kappa on a lily pad
-who floats a record in the dish on her head. She plays your own music, and
-YouTube without the feed.
+A little yokai who lives on your desktop and plays your music: Sara, a kappa
+on a lily pad who floats a record in the dish on her head, or one of her
+friends. Your own songs, and YouTube without the feed.
 
-**Start her:** double-click `Start Sara.bat` (the first run downloads Electron,
+**Start her:** double-click `Start Music Buddies.bat` (the first run downloads Electron,
 about 100 MB). Or `npm install` then `npm start`.
 
 ## Giving her music
@@ -59,7 +59,7 @@ Sara sits there with her record turning.
 - Media keys (play/pause, next, previous) work from anywhere.
 - In the player: Space plays or pauses, Esc closes it.
 
-Her library and settings live in `%APPDATA%\catching-days-sara\sara.json`.
+Her library and settings live in `%APPDATA%\Music Buddies\sara.json`.
 Removing a song never deletes the file.
 
 ## For the curious

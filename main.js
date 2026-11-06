@@ -1,6 +1,6 @@
-/* main.js · Sara, the music kappa
+/* main.js · Music Buddies, with Sara the music kappa
    ─────────────────────────────────────────────────────────────────────────
-   A companion to the desktop toad, drawn in the same hand: a kappa on a lily
+   A desktop pet that plays your music. Sara is a kappa on a lily
    pad who floats a record in the dish on her head. Drop songs (or a whole
    folder) on her and they join her library, named after their files. Anything
    put in Music\Sara joins it too. Tap her for the player: playlists, and
@@ -16,7 +16,7 @@ const {app,BrowserWindow,WebContentsView,ipcMain,screen,Menu,shell,dialog,global
 const path=require('path'), fs=require('fs'), {pathToFileURL}=require('url');
 const lib=require('./library');
 
-app.setAppUserModelId('days.catching.sara');
+app.setAppUserModelId('music.buddies');
 if(!process.argv.includes('--gpu')) app.disableHardwareAcceleration();
 { const p=process.argv.find(x=>x.startsWith('--profile=')); if(p) app.setPath('userData',path.resolve(p.slice(10))); }
 if(!app.requestSingleInstanceLock()){ app.quit(); return; }
@@ -24,6 +24,9 @@ if(!app.requestSingleInstanceLock()){ app.quit(); return; }
 /* ════════════════════ settings and library (one file in her own folder) ════════════════════ */
 const SIZES={xs:80,s:110,m:140,l:180,xl:230};
 const FILE=()=>path.join(app.getPath('userData'),'sara.json');
+/* the app was first called catching-days-sara: bring that library over once */
+try{ const old=path.join(app.getPath('appData'),'catching-days-sara','sara.json');
+  if(!fs.existsSync(FILE())&&fs.existsSync(old)){ fs.mkdirSync(path.dirname(FILE()),{recursive:true}); fs.copyFileSync(old,FILE()); } }catch(e){}
 const FOLDER=()=>path.join(app.getPath('music'),'Sara');
 const DEFAULTS={pos:null,peek:null,pet:'sara',size:'m',volume:.8,shuffle:false,repeat:'all',view:'all',library:{tracks:[],playlists:[]}};
 let S=null;
@@ -117,7 +120,7 @@ function ytRun(js){
   return ytView.webContents.executeJavaScript(js,true).catch(()=>null);
 }
 
-/* ════════════════════ the pet's window: size, place, peeking (the desktop toad's way) ════════════════════
+/* ════════════════════ the pet's window: size, place, peeking (tucked behind a screen edge) ════════════════════
    The window is a little bigger than the pet (room to hop and lean). Its spot on
    screen is "virtual": push the pet past the left, right or bottom edge and the
    window stays at the edge while the distance pushed becomes how far the pet has
@@ -259,7 +262,7 @@ const PW=388, PH=600;            // a 340px card with 24px round it for its shad
 let playerOpen=false;
 function createPlayer(){
   playerWin=new BrowserWindow({width:PW,height:PH,frame:false,transparent:true,resizable:false,alwaysOnTop:true,skipTaskbar:true,
-    hasShadow:false,fullscreenable:false,maximizable:false,minimizable:false,show:false,backgroundColor:'#00000000',title:'Sara · player',
+    hasShadow:false,fullscreenable:false,maximizable:false,minimizable:false,show:false,backgroundColor:'#00000000',title:'Music Buddies',
     webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:false,
       autoplayPolicy:'no-user-gesture-required'}});
   playerWin.loadFile(path.join(__dirname,'player.html'));
@@ -298,7 +301,7 @@ function petMenu(){
       S.size=k; save(); resizePet(); if(playerOpen) placePlayer();
     }}))},
     {type:'separator'},
-    {label:'Quit Sara',click:()=>app.quit()}
+    {label:'Quit Music Buddies',click:()=>app.quit()}
   ]);
 }
 

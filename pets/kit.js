@@ -1,4 +1,4 @@
-/* pets/kit.js · what every one of Sara's yokai is drawn with, in the toads' grammar (see ../../toad-art.js)
+/* pets/kit.js · what every one of Sara's yokai is drawn with, in one shared grammar
    One shared box, viewBox "-68 -118 136 136", ground line y=0, centred on x=0.
    A pet file calls PetKit.register({id,name,kind,blurb,css,art(ID)}); art returns the inside of the <svg>,
    with every id prefixed by ID. The page sets these classes on an ancestor and each pet answers them:

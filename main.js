@@ -28,7 +28,7 @@ const FILE=()=>path.join(app.getPath('userData'),'sara.json');
 try{ const old=path.join(app.getPath('appData'),'catching-days-sara','sara.json');
   if(!fs.existsSync(FILE())&&fs.existsSync(old)){ fs.mkdirSync(path.dirname(FILE()),{recursive:true}); fs.copyFileSync(old,FILE()); } }catch(e){}
 const FOLDER=()=>path.join(app.getPath('music'),'Sara');
-const DEFAULTS={pos:null,peek:null,pet:'sara',size:'m',volume:.8,shuffle:false,repeat:'all',view:'all',library:{tracks:[],playlists:[]}};
+const DEFAULTS={pos:null,peek:null,win:null,pet:'sara',size:'m',volume:.8,shuffle:false,repeat:'all',view:'all',library:{tracks:[],playlists:[]}};
 let S=null;
 function load(){
   try{ S=Object.assign({},DEFAULTS,JSON.parse(fs.readFileSync(FILE(),'utf8'))); }catch(e){ S=Object.assign({},DEFAULTS); }
@@ -168,15 +168,6 @@ function restorePlace(){
   place(v.x,v.y,false);
 }
 function remember(){ const b=petWin.getBounds(); S.pos={x:b.x,y:b.y}; S.peek=peek.edge&&peek.p>.5?{edge:peek.edge}:null; save(); }
-/* where the visible part of the pet is, in screen pixels */
-function petRect(){
-  const g=geo(), b=petWin.getBounds(), s=g.S;
-  if(peek.edge==='r'&&peek.p>.5) return {x:b.x+g.W-s*.6,y:b.y+g.H/2-s*.45,w:s*.6,h:s*.8};
-  if(peek.edge==='l'&&peek.p>.5) return {x:b.x,y:b.y+g.H/2-s*.45,w:s*.6,h:s*.8};
-  if(peek.edge==='b'&&peek.p>.5) return {x:b.x+g.W/2-s*.5,y:b.y+g.H-s*.45,w:s,h:s*.45};
-  return {x:b.x+(g.W-s)/2,y:b.y+g.H-g.FOOT-s,w:s,h:s+g.FOOT};
-}
-
 /* ── dragging: the cursor is read here every 8ms, so a fast flick never leaves her behind ── */
 let drag=null;
 function dragStart(press){
@@ -191,7 +182,6 @@ function dragTick(){
   if(!drag) return;
   const c=screen.getCursorScreenPoint();
   place(c.x-drag.ox,c.y-drag.oy,false);
-  if(playerOpen) placePlayer();
   const dx=c.x-drag.lastX; drag.lastX=c.x;
   send(petWin,'drag',{on:true,dx});
 }
@@ -203,7 +193,6 @@ function dragEnd(){
   const b=petWin.getBounds();
   if(peek.edge&&peek.p>=.35){ const v=virtFor(b.x,b.y,peek.edge); place(v.x,v.y,true); }
   else { const L=layout(virt.x,virt.y); place(L.x,L.y,true); }
-  if(playerOpen) placePlayer();
   remember();
 }
 
@@ -253,32 +242,38 @@ function resizePet(){
 let PETS=[{id:'sara',name:'Sara',kind:'kappa'}], sentPet=null;
 const activePet=()=>state.pet||S.pet||'sara';
 function syncPet(){
-  const id=activePet(); if(id===sentPet) return; sentPet=id;
-  send(petWin,'pet',{id}); send(playerWin,'pet',{id});
+  const id=activePet(); send(playerWin,'pet',{id,everyday:S.pet});   // the window also shows the everyday pick
+  if(id===sentPet) return; sentPet=id; send(petWin,'pet',{id});
 }
 
-/* ════════════════════ the player beside her ════════════════════ */
-const PW=388, PH=600;            // a 340px card with 24px round it for its shadow
-let playerOpen=false;
+/* ════════════════════ the Music Buddies window: songs, playlists, YouTube, which buddy ════════════════════
+   A normal window of its own (in the taskbar, sized and placed where you leave it). Closing it only hides
+   it: it is the music engine too, so the music keeps going. */
+const ICON=path.join(__dirname,'icon.png');
+function onScreen(b){
+  return !!b&&screen.getAllDisplays().some(d=>{ const a=d.workArea;
+    return b.x<a.x+a.width-80&&b.x+b.width>a.x+80&&b.y>=a.y-10&&b.y<a.y+a.height-80; });
+}
 function createPlayer(){
-  playerWin=new BrowserWindow({width:PW,height:PH,frame:false,transparent:true,resizable:false,alwaysOnTop:true,skipTaskbar:true,
-    hasShadow:false,fullscreenable:false,maximizable:false,minimizable:false,show:false,backgroundColor:'#00000000',title:'Music Buddies',
+  playerWin=new BrowserWindow(Object.assign({width:960,height:640},onScreen(S.win)?S.win:{},{minWidth:760,minHeight:520,show:false,
+    title:'Music Buddies',icon:ICON,backgroundColor:'#fbf8f2',autoHideMenuBar:true,
     webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:false,
-      autoplayPolicy:'no-user-gesture-required'}});
+      autoplayPolicy:'no-user-gesture-required'}}));
+  playerWin.setMenu(null);
   playerWin.loadFile(path.join(__dirname,'player.html'));
+  const keep=()=>{ if(!playerWin.isMaximized()&&!playerWin.isMinimized()){ S.win=playerWin.getBounds(); save(); } };
+  playerWin.on('resized',keep); playerWin.on('moved',keep);
   playerWin.on('close',e=>{ if(!quitting){ e.preventDefault(); closePlayer(); } });
 }
-function placePlayer(){
-  const r=petRect(), wa=workAreaAt(r.x+r.w/2,r.y+r.h/2), h=Math.min(PH,wa.height-8);
-  let x=r.x-PW+18;
-  if(x<wa.x) x=r.x+r.w-18;
-  x=Math.round(Math.min(Math.max(x,wa.x),wa.x+wa.width-PW));
-  const y=Math.round(Math.min(Math.max(r.y+r.h-h+20,wa.y),wa.y+wa.height-h));
-  playerWin.setBounds({x,y,width:PW,height:h});
+const playerOpen=()=>!!playerWin&&playerWin.isVisible()&&!playerWin.isMinimized();
+function openPlayer(){ if(playerWin.isMinimized()) playerWin.restore(); playerWin.show(); playerWin.focus(); send(playerWin,'open',{}); }
+function closePlayer(){ if(playerWin) playerWin.hide(); }
+const togglePlayer=()=>playerOpen()?closePlayer():openPlayer();
+/* Ctrl+]: bring her out and the window up; pressed again while it's in front, put the window away */
+function wake(){
+  if(petWin&&!petWin.isVisible()) petWin.showInactive();
+  if(playerOpen()&&playerWin.isFocused()) closePlayer(); else openPlayer();
 }
-function openPlayer(){ placePlayer(); playerOpen=true; playerWin.show(); playerWin.focus(); playerWin.setAlwaysOnTop(true,'floating'); send(playerWin,'open',{}); }
-function closePlayer(){ if(!playerOpen) return; playerOpen=false; playerWin.hide(); }
-const togglePlayer=()=>playerOpen?closePlayer():openPlayer();
 
 function addMusic(){
   dialog.showOpenDialog({title:'Give Sara some music',properties:['openFile','multiSelections'],
@@ -289,7 +284,7 @@ let state={playing:false,title:'',pet:''};
 function petMenu(){
   const cmd=c=>()=>send(playerWin,'cmd',c);
   return Menu.buildFromTemplate([
-    {label:playerOpen?'Close the player':'Open the player',click:togglePlayer},
+    {label:playerOpen()?'Close Music Buddies':'Open Music Buddies',accelerator:'CommandOrControl+]',click:togglePlayer},
     {label:state.playing?'Pause':'Play',click:cmd('toggle')},
     {label:'Next song',click:cmd('next')},
     {type:'separator'},
@@ -298,7 +293,7 @@ function petMenu(){
     {label:'Pet',submenu:PETS.map(p=>({label:`${p.name} · ${p.kind}`,type:'radio',checked:S.pet===p.id,click:()=>{ S.pet=p.id; save(); syncPet(); }}))
       .concat(state.pet&&state.pet!==S.pet?[{type:'separator'},{label:`This playlist has its own: ${(PETS.find(p=>p.id===state.pet)||{name:state.pet}).name}`,enabled:false}]:[])},
     {label:'Size',submenu:[['xs','Tiny'],['s','Small'],['m','Medium'],['l','Large'],['xl','Huge']].map(([k,l])=>({label:l,type:'radio',checked:S.size===k,click:()=>{
-      S.size=k; save(); resizePet(); if(playerOpen) placePlayer();
+      S.size=k; save(); resizePet();
     }}))},
     {type:'separator'},
     {label:'Quit Music Buddies',click:()=>app.quit()}
@@ -306,7 +301,7 @@ function petMenu(){
 }
 
 /* ════════════════════ messages from the pages ════════════════════ */
-ipcMain.handle('init',()=>({pet:activePet(),volume:S.volume,shuffle:S.shuffle,repeat:S.repeat,view:S.view,library:S.library,folder:ensureFolder(),
+ipcMain.handle('init',()=>({pet:activePet(),everyday:S.pet,volume:S.volume,shuffle:S.shuffle,repeat:S.repeat,view:S.view,library:S.library,folder:ensureFolder(),
   folderTracks:scan([FOLDER()])}));
 ipcMain.handle('scan',(e,paths)=>scan(paths));
 ipcMain.handle('yt-search',(e,q)=>ytSearch(q).catch(()=>null));
@@ -340,6 +335,7 @@ ipcMain.on('drag-end',()=>dragEnd());
 ipcMain.on('tap',()=>togglePlayer());
 ipcMain.on('pet-menu',()=>petMenu().popup({window:petWin}));
 ipcMain.on('player-close',()=>closePlayer());
+ipcMain.on('set-pet',(e,id)=>{ if(PETS.some(p=>p.id===id)){ S.pet=id; save(); syncPet(); } });
 ipcMain.on('add-music',()=>addMusic());
 ipcMain.on('open-folder',()=>shell.openPath(ensureFolder()));
 ipcMain.on('show-file',(e,p)=>{ if(typeof p==='string'&&fs.existsSync(p)) shell.showItemInFolder(p); });
@@ -354,9 +350,10 @@ app.whenReady().then(()=>{
   /* the keyboard's media keys work even when Sara isn't in front */
   const key=(k,c)=>{ try{ globalShortcut.register(k,()=>send(playerWin,'cmd',c)); }catch(e){} };
   key('MediaPlayPause','toggle'); key('MediaNextTrack','next'); key('MediaPreviousTrack','prev');
+  require('./hotkeys')('Music Buddies',wake);   // Ctrl+] for Music Buddies, Ctrl+\ for the Catching Days toad
 });
 /* --test: a handle the test harness can reach over the inspector (move her, read where she is) */
-if(process.argv.includes('--test')) global.__pet={place,virtFor,layout,geo,resizePet,syncPet,
+if(process.argv.includes('--test')) global.__pet={place,virtFor,layout,geo,resizePet,syncPet,wake,togglePlayer,playerOpen,keys:()=>["CommandOrControl+\\","CommandOrControl+]"].map(k=>globalShortcut.isRegistered(k)),
   get peek(){ return peek; }, get virt(){ return virt; }, get S(){ return S; }, bounds:()=>petWin.getBounds(), dragEnd:()=>{ const b=petWin.getBounds(); place(b.x,b.y,true); }};
 app.on('will-quit',()=>globalShortcut.unregisterAll());
 app.on('window-all-closed',()=>app.quit());

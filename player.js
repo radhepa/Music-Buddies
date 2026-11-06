@@ -1,11 +1,11 @@
-/* player.js · Sara's player and the music engine itself.
+/* player.js · the Music Buddies window and the music engine itself.
    Songs from files play in an <audio> here; a YouTube song plays in a small view
    main.js lays over the record box (#slot). Both report into the same state. */
 'use strict';
 const $=id=>document.getElementById(id);
 const audio=new Audio();
 let L={tracks:[],playlists:[],gone:[]};          // gone: songs taken out, so Sara's folder doesn't bring them back
-let view='all', vol=.8, shuffle=false, repeat='all', tab='lib';
+let view='all', vol=.8, shuffle=false, repeat='all', tab='lib', everyday='sara';
 let cur=null;                                    // {id, queue:[ids], from: the list it was started from}
 let playing=false, pos=0, dur=0, seeking=false, ytLoadAt=0, ytDone=false, errRun=0;
 let results=[];                                  // the last YouTube search, as songs not (yet) in the library
@@ -160,12 +160,17 @@ function row(t,opts){
 }
 function render(){
   /* playlists */
-  const chips=[`<button class="chip${view==='all'?' on':''}" data-view="all">All songs<i>${L.tracks.length}</i></button>`]
-    .concat(L.playlists.map(p=>`<button class="chip${view===p.id?' on':''}" data-view="${p.id}">${esc(p.name)}<i>${idsOf(p.id).length}</i></button>`));
+  const on=v=>tab==='lib'&&view===v?' on':'';
+  const note='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12V3.5l7-1.5V10.5"/><circle cx="4.3" cy="12" r="1.8"/><circle cx="11.3" cy="10.5" r="1.8"/></svg>';
+  const list='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h8M2.5 8h8M2.5 12h5M12.5 9.5v4M10.5 11.5h4"/></svg>';
+  const chips=[`<button class="chip${on('all')}" data-view="all">${note}All songs<i>${L.tracks.length}</i></button>`]
+    .concat(L.playlists.map(p=>`<button class="chip${on(p.id)}" data-view="${p.id}">${list}${esc(p.name)}<i>${idsOf(p.id).length}</i></button>`));
   const ch=$('chips');
   if(!ch.querySelector('input')) ch.innerHTML=chips.join('')+'<button class="chip new" id="newpl">+ New playlist</button>';
   /* the songs */
-  const ids=idsOf(view);
+  const ids=idsOf(view), pl=plOf(view);
+  $('vt').textContent=pl?pl.name:'All songs';
+  $('vc').textContent=ids.length===1?'1 song':ids.length+' songs';
   $('list').innerHTML=ids.length?ids.map(id=>row(byId(id),{})).join('')
     :view==='all'?`<div class="empty"><b>Sara’s dish is empty</b>Drop songs or a whole folder on her (or right here). Anything you put in Music\\Sara shows up too, named after its file.</div>`
     :`<div class="empty"><b>Nothing in this playlist yet</b>Drop songs here while it’s open, or use ⋯ on a song in All songs.</div>`;
@@ -183,21 +188,20 @@ $('repeat').onclick=()=>{ repeat={all:'one',one:'off',off:'all'}[repeat]; drawMo
 $('seek').addEventListener('input',e=>{ seeking=true; const p=e.target.value/1000; e.target.style.setProperty('--p',p); $('t0').textContent=fmt(p*dur); });
 $('seek').addEventListener('change',e=>{ seeking=false; if(dur) seekTo(e.target.value/1000*dur); });
 $('vol').addEventListener('input',e=>{ vol=e.target.value/100; audio.volume=vol; e.target.style.setProperty('--p',vol); sara.send('yt',{cmd:'volume',v:vol}); save(); });
-$('close').onclick=()=>sara.send('player-close');
 $('add').onclick=()=>sara.send('add-music');
 $('folder').onclick=()=>sara.send('open-folder');
 function setTab(t){
   tab=t;
-  $('tab-lib').setAttribute('aria-selected',String(t==='lib')); $('tab-yt').setAttribute('aria-selected',String(t==='yt'));
+  $('tab-yt').classList.toggle('on',t==='yt');
   $('pane-lib').hidden=t!=='lib'; $('pane-yt').hidden=t!=='yt';
+  render();
   if(t==='yt') setTimeout(()=>$('q').focus(),0);
 }
-$('tab-lib').onclick=()=>setTab('lib');
 $('tab-yt').onclick=()=>setTab('yt');
 
 $('chips').addEventListener('click',e=>{
   const b=e.target.closest('[data-view]');
-  if(b){ view=b.dataset.view; save(); render(); return; }
+  if(b){ view=b.dataset.view; save(); setTab('lib'); return; }
   if(e.target.closest('#newpl')){
     const nb=e.target.closest('#newpl');
     nb.innerHTML='<input id="plname" placeholder="Playlist name" maxlength="40" aria-label="New playlist name">';
@@ -285,7 +289,6 @@ window.addEventListener('drop',async e=>{
 
 /* ── keys ── */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ sara.send('player-close'); return; }
   if(e.target.closest('input')) return;
   if(e.key===' '){ e.preventDefault(); toggle(); }
 });
@@ -297,13 +300,19 @@ const sendSlot=()=>{ const r=$('slot').getBoundingClientRect(); sara.send('yt-sl
 sara.on('open',()=>{ sendSlot(); });
 /* the header shows whichever pet is out */
 function portrait(id){ const d=PetKit.get(id); $('pt').innerHTML=PetKit.svg(d.id); $('nm').textContent=d.name; $('drop-b').textContent=`Let go to give ${d.name} these songs`; }
-sara.on('pet',p=>portrait(p&&p.id));
+/* the everyday buddy: the one who's out unless a playlist has its own */
+function drawBuddies(){
+  $('buddies').innerHTML=PetKit.list().map(d=>`<button role="radio" aria-checked="${d.id===everyday}" data-bud="${d.id}" aria-label="${esc(d.name)}, the ${esc(d.kind)}" title="${esc(d.name)} · ${esc(d.kind)}">${PetKit.svg(d.id)}</button>`).join('');
+  const d=PetKit.get(everyday); $('budname').textContent=`${d.name} · ${d.kind}`;
+}
+$('buddies').addEventListener('click',e=>{ const b=e.target.closest('[data-bud]'); if(!b) return; everyday=b.dataset.bud; sara.send('set-pet',everyday); drawBuddies(); });
+sara.on('pet',p=>{ portrait(p&&p.id); if(p&&p.everyday&&p.everyday!==everyday){ everyday=p.everyday; drawBuddies(); } });
 window.addEventListener('resize',sendSlot);
 
 (async()=>{
   PetKit.injectCSS();
   const o=await sara.ask('init');
-  portrait(o.pet);
+  portrait(o.pet); everyday=PetKit.get(o.everyday).id; drawBuddies();
   L=Object.assign({tracks:[],playlists:[],gone:[]},o.library);
   if(!Array.isArray(L.gone)) L.gone=[];
   vol=typeof o.volume==='number'?o.volume:.8; shuffle=!!o.shuffle; repeat=['all','one','off'].includes(o.repeat)?o.repeat:'all';

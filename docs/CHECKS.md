@@ -1,12 +1,13 @@
 # Design and mechanics checks
 
-Forty-five rounds of checks. The first ten on the banner (chat and songs), the pets' new moves and Kon's
+Fifty rounds of checks. The first ten on the banner (chat and songs), the pets' new moves and Kon's
 redraw. Each round tested the real app in a test profile, driven over the DevTools
 protocol, with screenshots. Three testers, role-played, rated how helpful it was
 (out of 10), and asked for things. A request was taken only when it helps the app's
 job (music while you work, with a small friend) at a cost that fits; refusals say why.
 Rounds 11 to 25 came after a full code audit and are about a smarter chat. Rounds 26
-to 45 came after the rename to Music Buddies and a second audit. Both are at the end.
+to 45 came after the rename to Music Buddies and a second audit; 46 to 50 test a bad
+day (a damaged file, no internet). All are at the end.
 
 - **Maya**, college student: studies with music on, wants it quick and not distracting.
 - **Theo**, music student: listens closely, cares about songs, queues and timing.
@@ -394,3 +395,53 @@ Fifteen findings, each fixed in the round named after it.
   search finds no API keys. The chat is still all offline rules.
 - Live: Sara and Kasa, from hello to bye: put music on, what's this, who sings it, add to
   Study Mix, louder, studying, skip, pause. Every reply read right.
+
+## Five more checks (rounds 46 to 50)
+
+These rounds tested what goes wrong on a real day: a damaged save file, no internet, a
+stalled connection, a long chat, and a second copy of the app. Two problems were found,
+and both are fixed.
+
+| Round | Focus | Maya | Theo | Priya |
+|---|---|---|---|---|
+| 46 | A damaged save file | 10 | 10 | 10 |
+| 47 | No internet, a stalled connection | 10 | 10 | 10 |
+| 48 | Pause really stops YouTube | 10 | 10 | 10 |
+| 49 | A long chat, two buddies | 10 | 10 | 10 |
+| 50 | A second copy, the hotkeys | 10 | 10 | 10 |
+
+## Round 46 · a damaged save file
+- Found: when `library.json` could not be read (cut short, edited by hand), the app
+  started empty and the next save wrote over it. Every song and playlist was lost.
+  **Fixed:** the damaged file is renamed `library-damaged-<time>.json` and kept, and the
+  app starts fresh. Live: a file cut to 300 bytes was kept, and the app started.
+- Priya: "repair it on its own?" **Not taken:** a cut-short file can't be read back
+  safely. Kept aside, it can still be fixed by hand.
+
+## Round 47 · no internet, a stalled connection
+- With no network, *play* plus an unknown song gets "I can't reach YouTube".
+- Found: a pasted link with no network said "Found it!", and then nothing played.
+  **Fixed:** a network error now gets the offline line, in the chat and in the main
+  window's search box. A link YouTube doesn't know gets "couldn't find it".
+- With a connection that never answers, the buddy gives up after about 11 seconds and
+  says it can't reach YouTube. Back online, the same request plays.
+
+## Round 48 · pause really stops YouTube
+- The YouTube status reports were counted. Playing: 8 in 4 seconds. Paused: 0. Played
+  again: 9. This checks the round 32 fix for real.
+
+## Round 49 · a long chat, two buddies
+- 19 messages with Kon and then Kasa: good morning, an exam in an hour, *sure*, what's
+  this, a typo'd skip, louder and *more*, time left, shuffle, who are your friends,
+  switch to Kasa, play Study Mix, add this to Study Mix (already in), loop and stop,
+  thanks, good night. Every reply did the right thing, in each buddy's voice.
+- Maya: "remember what we talked about after a restart?" **Not taken:** the chat is
+  meant to be light. Your songs, playlists and buddy are what's kept.
+
+## Round 50 · a second copy, the hotkeys
+- Starting the app a second time opens the first copy's window and quits in under a
+  second. Only one copy runs.
+- Ctrl+] and Ctrl+\ are shared with Catching Days through `hotkeys.js`: the app that
+  started first holds both keys and wakes the other. The test copy found both keys held
+  by the running app, as it should.
+- `npm test` passes, every script passes `node --check`, and no API keys are used.

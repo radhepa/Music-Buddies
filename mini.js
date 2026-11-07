@@ -91,9 +91,10 @@ async function ask(text){
   else if(d&&d.open) setTimeout(()=>buddies.send(d.open==='app'?'open-app':'open-folder'),600);
   else if(d&&d.link){
     dots(true); let one=null;
-    try{ one=await buddies.ask('yt-info',d.link); }catch(e){ one=null; }
+    try{ one=await buddies.ask('yt-info',d.link); }catch(e){ one=false; }
     dots(false);
-    if(!one) say(d.say.missing);
+    if(one===false) say(d.say.offline);
+    else if(!one) say(d.say.missing);
     else { quiet=Date.now()+4000; buddies.send('mini-yt',one); say(Chat.fill(d.say.found,{t:one.title})); act('nod'); }
   }
   else if(d&&d.play){ quiet=Date.now()+2500; buddies.send('mini-play',d.play); }

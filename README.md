@@ -111,7 +111,8 @@ pet's right-click menu really quits.
 - Media keys (play/pause, next, previous) work from anywhere.
 - In the window: Space plays or pauses.
 
-The library and settings live in `%APPDATA%\Music Buddies\library.json`.
+The library and settings live in `%APPDATA%\Music Buddies\library.json`. If that
+file is ever damaged, it is kept as `library-damaged-<time>.json` and the app starts fresh.
 Removing a song never deletes the file.
 
 ## For the curious

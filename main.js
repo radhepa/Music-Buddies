@@ -41,7 +41,11 @@ function moveOldFolder(){
 const DEFAULTS={pos:null,peek:null,win:null,pet:'sara',size:'m',volume:.8,shuffle:false,repeat:'all',view:'all',library:{tracks:[],playlists:[]}};
 let S=null;
 function load(){
-  try{ S=Object.assign({},DEFAULTS,JSON.parse(fs.readFileSync(FILE(),'utf8'))); }catch(e){ S=Object.assign({},DEFAULTS); }
+  try{ S=Object.assign({},DEFAULTS,JSON.parse(fs.readFileSync(FILE(),'utf8'))); }catch(e){
+    S=Object.assign({},DEFAULTS);
+    /* a damaged file is kept aside, never saved over: the songs and playlists in it can still be rescued */
+    if(fs.existsSync(FILE())) try{ fs.renameSync(FILE(),FILE().replace(/\.json$/,'')+'-damaged-'+Date.now()+'.json'); }catch(e2){}
+  }
   if(!SIZES[S.size]) S.size='m';
   if(typeof S.pet!=='string'||!S.pet) S.pet='sara';
   if(!S.library||!Array.isArray(S.library.tracks)) S.library={tracks:[],playlists:[]};
@@ -86,10 +90,10 @@ async function ytSearch(q){
 }
 async function ytInfo(url){
   const id=lib.ytIdOf(url); if(!id) return null;
-  try{
-    const r=await net.fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id),{signal:AbortSignal.timeout(10000)});
-    const o=await r.json(); return {yt:id,title:o.title||'YouTube video',channel:o.author_name||''};
-  }catch(e){ return {yt:id,title:'YouTube video',channel:''}; }
+  /* no network: throws, so the caller can say it's offline; a video YouTube doesn't know: null */
+  const r=await net.fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id),{signal:AbortSignal.timeout(10000)});
+  if(!r.ok) return null;
+  try{ const o=await r.json(); return {yt:id,title:o.title||'YouTube video',channel:o.author_name||''}; }catch(e){ return {yt:id,title:'YouTube video',channel:''}; }
 }
 
 /* the YouTube player: YouTube's own embed, in a view inside the player window.

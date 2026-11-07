@@ -257,7 +257,7 @@ $('find').addEventListener('submit',async e=>{
   const q=$('q').value.trim(); if(!q) return;
   const box=$('results');
   box.innerHTML='<p class="msg">Looking…</p>';
-  const one=await buddies.ask('yt-info',q);
+  const one=await buddies.ask('yt-info',q).catch(()=>null);   // offline: the search below says so
   const found=one?[one]:await buddies.ask('yt-search',q);
   if(!found){ box.innerHTML='<p class="msg">Couldn’t reach YouTube. Check the connection and try again.</p>'; return; }
   if(!found.length){ box.innerHTML='<p class="msg">Nothing came up for that. Try other words, or paste the video’s link.</p>'; return; }

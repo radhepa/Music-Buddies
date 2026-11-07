@@ -1,23 +1,24 @@
 # Music Buddies
 
-A little yokai who lives on your desktop and plays your music: Sara, a kappa
-on a lily pad who floats a record in the dish on her head, or one of her
-friends. Your own songs, and YouTube without the feed.
+Little yokai who live on your desktop and play your music: Sara the kappa, Kon
+the kitsune and Kasa the paper umbrella. One of them is out at a time. Your own
+songs, and YouTube without the feed.
 
-**Start her:** double-click `Start Music Buddies.bat` (the first run downloads Electron,
+**Start it:** double-click `Start Music Buddies.bat` (the first run downloads Electron,
 about 100 MB). Or `npm install` then `npm start`. `npm start -- --open` starts with the
 window open (the desktop and Start-menu shortcuts use it).
 
 No accounts and no API keys: the chat runs offline, and YouTube is searched the way a
 browser would.
 
-## Giving her music
+## Adding music
 
-- **Drop songs or a whole folder on Sara**, or on the open player. Each song is
+- **Drop songs or a whole folder on your buddy**, or on the open window. Each song is
   named after its file (`03 - My_Song.mp3` becomes *My Song*).
-- **Put files in `Music\Sara`** (right-click Sara, *Open Sara's folder*). Anything
-  there joins her library by itself.
-- **Add music…** in the player, or on her right-click menu.
+- **Put files in `Music\Music Buddies`** (right-click the pet, *Open the Music Buddies
+  folder*). Anything there joins the library by itself. It used to be `Music\Sara`;
+  the app moves that folder over once.
+- **Add music…** in the window, or on the pet's right-click menu.
 
 mp3, m4a, aac, wav, ogg, opus, flac and webm all play.
 
@@ -25,11 +26,11 @@ mp3, m4a, aac, wav, ogg, opus, flac and webm all play.
 
 *All songs* holds everything. *+ New playlist* makes one; songs dropped while a
 playlist is open go into it. Use ⋯ on a song to add it to a playlist, take it
-out, or remove it from Sara. Right-click a playlist to delete it (the songs stay).
+out, or remove it from Music Buddies. Right-click a playlist to delete it (the songs stay).
 
 ## Three yokai
 
-Sara has two friends, both yokai, and any of them can be out:
+Music Buddies has three yokai, and any of them can be out:
 
 - **Sara**, a kappa who floats a record in the dish on her head
 - **Kon**, a kitsune with a shamisen and foxfire
@@ -55,7 +56,7 @@ The YouTube tab searches YouTube, or takes a pasted link. Tap a result to play
 it; **+** keeps it in your library. It plays in YouTube's own player, shown
 small and held to that one video: no recommendations, comments or feed, and
 nothing in it opens a page. Close the window and the music keeps going while
-Sara sits there with her record turning.
+your buddy dances on the desktop.
 
 ## The banner: talk to your buddy
 
@@ -74,6 +75,10 @@ seek bar, then two tabs.
   morning, tells jokes, dances when asked, gets past small typos (*skp*, *puase*),
   and doesn't say the same line twice in a row. The chips under the chat are
   shortcuts.
+- More you can say: *add this to Study Mix* (a playlist by name), *switch to Kon*
+  or *next buddy*, *restart*, *open my folder*, *open the window*, *sing me a
+  song*. Paste a YouTube link and it plays that video. Removing a song is never
+  done from the chat: the buddy tells you where the ⋯ button is.
 - **Songs.** Pick a playlist, search it, tap a song. The song plays with that
   list as its queue.
 - A YouTube song found from the chat isn't kept until you say *save this* or tap
@@ -106,7 +111,7 @@ pet's right-click menu really quits.
 - Media keys (play/pause, next, previous) work from anywhere.
 - In the window: Space plays or pauses.
 
-Her library and settings live in `%APPDATA%\Music Buddies\sara.json`.
+The library and settings live in `%APPDATA%\Music Buddies\library.json`.
 Removing a song never deletes the file.
 
 ## For the curious

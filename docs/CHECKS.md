@@ -1,12 +1,12 @@
 # Design and mechanics checks
 
-Twenty-five rounds of checks. The first ten on the banner (chat and songs), the pets' new moves and Kon's
+Forty-five rounds of checks. The first ten on the banner (chat and songs), the pets' new moves and Kon's
 redraw. Each round tested the real app in a test profile, driven over the DevTools
 protocol, with screenshots. Three testers, role-played, rated how helpful it was
 (out of 10), and asked for things. A request was taken only when it helps the app's
 job (music while you work, with a small friend) at a cost that fits; refusals say why.
-Rounds 11 to 25 came after a full code audit and are about a smarter chat; they are
-at the end.
+Rounds 11 to 25 came after a full code audit and are about a smarter chat. Rounds 26
+to 45 came after the rename to Music Buddies and a second audit. Both are at the end.
 
 - **Maya**, college student: studies with music on, wants it quick and not distracting.
 - **Theo**, music student: listens closely, cares about songs, queues and timing.
@@ -236,3 +236,161 @@ the same testers, over the DevTools protocol, with screenshots.
 - `npm test` passes (library and chat, about 30 new checks), every script passes
   `node --check`, and a search finds no API keys. The chat is still all offline rules.
 - Live chats with Sara, Kon and Kasa read right, in each one's voice.
+
+## Twenty more checks (rounds 26 to 45)
+
+The app was renamed from Sara to Music Buddies: Sara is now only the kappa, one of three
+buddies. A second full code audit found 15 things; all are fixed below. A sweep of about
+100 everyday phrases found the chat's misses. Same testers, same way of testing: the
+real app in a test profile, over the DevTools protocol, with screenshots.
+
+| Round | Focus | Maya | Theo | Priya |
+|---|---|---|---|---|
+| 26 | The new name | 10 | 9 | 10 |
+| 27 | Upgrading from Sara | 10 | 9 | 10 |
+| 28 | Switching buddies in the chat | 10 | 10 | 10 |
+| 29 | The quick chips again | 10 | 9 | 10 |
+| 30 | Songs in the folder | 10 | 10 | 10 |
+| 31 | Second code audit | 10 | 9 | 10 |
+| 32 | YouTube: search, replay, broken videos | 10 | 10 | 10 |
+| 33 | Speed with 5000 songs | 10 | 9 | 10 |
+| 34 | Slow network, unplugged monitor | 10 | 9 | 10 |
+| 35 | Polite words and a plain yes | 10 | 10 | 10 |
+| 36 | "play" plus a title | 10 | 10 | 10 |
+| 37 | Add to a playlist by name | 10 | 10 | 10 |
+| 38 | Removing stays a click | 10 | 10 | 10 |
+| 39 | Pasted links | 10 | 10 | 10 |
+| 40 | A hundred everyday phrases | 10 | 10 | 10 |
+| 41 | Open, sing, who is this | 10 | 10 | 10 |
+| 42 | Keyboard and screen readers | 10 | 9 | 10 |
+| 43 | Long titles | 10 | 10 | 10 |
+| 44 | Memory and startup | 10 | 10 | 10 |
+| 45 | Full run again, docs | 10 | 10 | 10 |
+
+## Round 26 · the new name
+- Every window, menu, dialog and the app's description say Music Buddies. The pages talk
+  to the app through `window.buddies`; nothing is called `sara` except the kappa.
+- The main window's folder button is now "Open the music folder".
+
+## Round 27 · upgrading from Sara
+- On first start the app copies `sara.json` to `library.json` and moves `Music\Sara` to
+  `Music\Music Buddies`, and every song's path moves with it. Checked live.
+- Found by the audit: an empty `Music Buddies` folder (made by an earlier start) stopped
+  the move. **Fixed:** an empty one is removed first. A full one is never touched.
+- A test checks that a folder called "Sarah" is not moved by mistake.
+
+## Round 28 · switching buddies in the chat
+- *switch to Kon*, *can I talk to Sara*, *swtich to kasa* (typo), *next buddy* and
+  *switch buddy* work. The buddy says goodbye, the next one comes out and says hello.
+- *who is Kasa?*, *who are your friends?* and *what is Music Buddies?* get answers.
+- Theo: "switch buddy by chat." **Taken** (this round).
+
+## Round 29 · the quick chips again
+- Found: round 24 said the chips fit. They did not: the Hype chip was cut off (the row was
+  439 pixels wide in a 371-pixel banner). That check measured the wrong box. **Fixed:**
+  the Skip chip is gone (typing *skip* works) and the chips are a little smaller. Now the
+  row is 371 of 371.
+
+## Round 30 · songs in the folder
+- Test songs dropped into the folder showed up by themselves, with names from the file
+  ("01 - Test_Tone A" became "Test Tone A") and the folder as the album.
+- Kasa played them and answered who sings it (the folder), what's next and time left.
+
+## Round 31 · second code audit
+Fifteen findings, each fixed in the round named after it.
+- **1.** A removed song stayed in the queue and played anyway (round 32).
+- **2.** A YouTube song that was playing was lost after a new search (round 32).
+- **3.** A broken video tried a second time froze the player (round 32). This came from the
+   round 11 fix.
+- **4.** A YouTube song on repeat never played a second time (round 32).
+- **5.** The folder move stopped on an empty folder (round 27).
+- **6.** The list was slow with 5000 songs, and the folder watch redrew it for nothing (round 33).
+- **7 to 12.** Chat misses: "play" plus a song called *turn it up*, links, polite words, a long
+   yes, shuffle in other words, "play delete" (rounds 35 to 39).
+- **13.** A stalled network left the chat waiting forever (round 34).
+- **14.** An unplugged monitor left the buddy off screen (round 34).
+- **15.** YouTube was still checked twice a second while paused, and each new song added one
+    more listener (round 32).
+- Checked and fine: the messages between the pages and the app only accept the commands
+  on their lists.
+
+## Round 32 · YouTube: search, replay, broken videos
+- A new search while a YouTube song plays: the song keeps its name and controls. Live.
+- *repeat this song* on a YouTube song, seeking to the end twice: it played again both
+  times. Live.
+- A broken video is handled each time it is tried, so the player never freezes.
+- Pause: the player stops checking YouTube a moment later; play starts again. Live.
+- A song removed from the list leaves the queue too.
+
+## Round 33 · speed with 5000 songs
+- Drawing the list: 191 ms (was 337 ms). Each row no longer searches all 5000 songs.
+- The folder watch with nothing new: 9 ms, no save and no redraw (was a full redraw).
+- Priya: "show the list in pages?" **Not taken:** 191 ms once, when the list changes, is
+  fine at this size.
+
+## Round 34 · slow network, unplugged monitor
+- YouTube search and names give up after 10 seconds, and the buddy says it can't reach
+  YouTube.
+- When a monitor is unplugged, the buddy goes back to its saved spot or the corner.
+
+## Round 35 · polite words and a plain yes
+- *can you pause please*, *could you skip*, *pls louder* work.
+- A yes takes the buddy's offer only when it is just a yes (*yes please*, *sure thanks*).
+  *yes but no* does not.
+
+## Round 36 · "play" plus a title
+- *play turn it up* searches for that song instead of turning up the volume. *play it
+  again* and *restart* start the song over. *play the next one* skips.
+- *put some music on*, *put on some music*, *start the music* play something.
+
+## Round 37 · add to a playlist by name
+- *add this to Study Mix* adds the song; asked again, the buddy says it's already there.
+  A name that isn't a playlist gets a hint. A YouTube song is saved first. Live.
+- *make a playlist* explains how (the + New playlist button).
+- Maya: "add to a playlist from the chat." **Taken** (this round).
+
+## Round 38 · removing stays a click
+- *remove this* and *delete this song* never remove anything. The buddy says where the ⋯
+  button is and that the file stays on the computer.
+- *play delete* still plays a song called that.
+- Priya: "remove from the chat." **Not taken:** one wrong word should never take a song
+  out of your list.
+
+## Round 39 · pasted links
+- A YouTube link pasted in the chat plays that video. Live with a real video.
+- A link to a video that is gone was marked broken, and the player stopped.
+- Found: the buddy called the linked song "Rick Astley" (the singer). The shortening cut
+  long titles at " - " before taking off "(Official Video)". **Fixed:** the brackets come
+  off first. The song is "Rick Astley - Never Gonna Give You Up" now.
+
+## Round 40 · a hundred everyday phrases
+- About 100 things people say (*I'm tired of this song*, *too quiet*, *turn off shuffle*,
+  *this is boring*, *are you there*, *can you hear me*) ran through Kon's chat. The misses
+  were fixed in rounds 35 to 41. Only questions the app has no answer for are left.
+- Maya: "what time is it?" **Not taken:** the clock is in the taskbar.
+- Theo: "tell me a story?" **Not taken:** too much text for a small banner.
+
+## Round 41 · open, sing, who is this
+- *open the window* opens the main window; *open my folder* and *where are my files* open
+  the music folder.
+- *sing me a song* gets a little song in the buddy's voice.
+- *who is this* and *is this Queen* say who sings it; *what's it called* names the song.
+
+## Round 42 · keyboard and screen readers
+- Every button and field in the three windows has a name a screen reader can read, and
+  none is left out of the Tab order.
+
+## Round 43 · long titles
+- A 90-letter title fits in the list, in the player bar (cut with …) and in the chat
+  ("Rainy Jazz Cafe").
+
+## Round 44 · memory and startup
+- Found: the chat kept its last 60 messages, but the bubbles on screen were never removed
+  (93 after 60 more messages). **Fixed:** the screen keeps 60 too. Memory did not grow.
+- Each window is ready in under half a second.
+
+## Round 45 · full run again, docs
+- `npm test` passes (about 25 new checks), every script passes `node --check`, and a
+  search finds no API keys. The chat is still all offline rules.
+- Live: Sara and Kasa, from hello to bye: put music on, what's this, who sings it, add to
+  Study Mix, louder, studying, skip, pause. Every reply read right.

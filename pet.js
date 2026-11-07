@@ -1,4 +1,4 @@
-/* pet.js · the yokai on your desktop (Sara, or whichever one is out)
+/* pet.js · the yokai on your desktop (whichever buddy is out)
    Laid out like the desktop toad: the window is click-through everywhere but the
    pet, a press is a tap (the player) or a drag (main moves the window), and a pet
    pushed past a screen edge hides there. On the sides it leans in from behind
@@ -20,9 +20,9 @@
 (async function(){
 const $=id=>document.getElementById(id);
 PetKit.injectCSS();
-const init=await sara.ask('pet-init');
+const init=await buddies.ask('pet-init');
 let G=init.geo, PEEK=init.peek||{edge:null,p:0}, PET=PetKit.get(init.pet).id, ST=init.state||{playing:false,title:''};
-sara.send('pets',PetKit.list().map(d=>({id:d.id,name:d.name,kind:d.kind})));
+buddies.send('pets',PetKit.list().map(d=>({id:d.id,name:d.name,kind:d.kind})));
 
 function sizeStage(){ document.documentElement.style.setProperty('--S',G.S+'px'); }
 function draw(){ $('art').innerHTML=PetKit.svg(PET); measureEyes(); mood(); }
@@ -163,7 +163,7 @@ function swapTo(id){
 
 /* ── the window lets clicks through everywhere but the pet ── */
 let ignoring=true, tiltAt=0;
-function setIgnore(on,force=false){ if(!force&&on===ignoring) return; ignoring=on; sara.send('ignore',on); }
+function setIgnore(on,force=false){ if(!force&&on===ignoring) return; ignoring=on; buddies.send('ignore',on); }
 function overPet(x,y){ const el=document.elementFromPoint(x,y); return !!(el&&el.closest('#art')); }
 function hover(over,force=false){
   setIgnore(!over,force);
@@ -173,8 +173,8 @@ function hover(over,force=false){
 document.addEventListener('mousemove',e=>{ if(!held&&!down) hover(overPet(e.clientX,e.clientY)); });
 /* main reads the cursor too (Windows can stop forwarding moves to a click-through
    window, and sends none while files are dragged from Explorer) and asks: is that on her? */
-sara.on('probe',p=>{ if(held||down) return; hover(!!p.inside&&overPet(p.x,p.y),true); });
-sara.on('hit-reset',()=>{ finishPress(false); ignoring=null; hovering=false; held=false; $('pet').classList.remove('held'); $('sway').style.transform=''; setAwake(); });
+buddies.on('probe',p=>{ if(held||down) return; hover(!!p.inside&&overPet(p.x,p.y),true); });
+buddies.on('hit-reset',()=>{ finishPress(false); ignoring=null; hovering=false; held=false; $('pet').classList.remove('held'); $('sway').style.transform=''; setAwake(); });
 /* no 'mouseleave': Windows sends bursts of them to a forwarding window with the
    cursor still on her. Leaving shows up in the next move or main's probe. */
 
@@ -194,7 +194,7 @@ stage.addEventListener('pointermove',e=>{
   if(down.dragging) return;
   if(Math.hypot(e.screenX-down.x,e.screenY-down.y)>4){
     down.dragging=true; held=true; $('pet').classList.add('held'); setAwake(); lively();
-    sara.send('drag-start',{x:down.x,y:down.y});
+    buddies.send('drag-start',{x:down.x,y:down.y});
   }
 });
 function finishPress(click){
@@ -202,13 +202,13 @@ function finishPress(click){
   const d=down; down=null;
   try{ stage.releasePointerCapture(d.id); }catch(_){}
   held=false; $('pet').classList.remove('held'); $('sway').style.transform=''; setAwake();
-  if(d.dragging){ sara.send('drag-end'); return; }
-  if(click){ sara.send('tap'); hop(); lively(); }
+  if(d.dragging){ buddies.send('drag-end'); return; }
+  if(click){ buddies.send('tap'); hop(); lively(); }
 }
 stage.addEventListener('pointerup',e=>{ if(down&&e.pointerId===down.id&&e.button===0) finishPress(true); });
 for(const ev of ['pointercancel','lostpointercapture']) stage.addEventListener(ev,e=>{ if(down&&e.pointerId===down.id) finishPress(false); });
 window.addEventListener('blur',()=>finishPress(false));
-stage.addEventListener('contextmenu',e=>{ e.preventDefault(); finishPress(false); if(overPet(e.clientX,e.clientY)) sara.send('pet-menu'); });
+stage.addEventListener('contextmenu',e=>{ e.preventDefault(); finishPress(false); if(overPet(e.clientX,e.clientY)) buddies.send('pet-menu'); });
 
 /* ── music dropped on her joins the library ── */
 let overN=0;
@@ -217,17 +217,17 @@ window.addEventListener('dragleave',()=>{ if(--overN<=0){ overN=0; stage.classLi
 window.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
 window.addEventListener('drop',e=>{
   e.preventDefault(); overN=0; stage.classList.remove('over');
-  const paths=sara.paths(e.dataTransfer.files);
+  const paths=buddies.paths(e.dataTransfer.files);
   if(!paths.length) return;
-  sara.send('drop-paths',paths); cheer(); lively(); setTimeout(()=>act('bow'),700);
+  buddies.send('drop-paths',paths); cheer(); lively(); setTimeout(()=>act('bow'),700);
 });
 
 /* ── messages from main ── */
-sara.on('peek',p=>{
+buddies.on('peek',p=>{
   const was=hiding(); PEEK=p; applyPeek(p.animate);
   if(was&&!hiding()&&!held) hop();                // pulled out of the edge
 });
-sara.on('drag',d=>{
+buddies.on('drag',d=>{
   if(d.on){
     held=true; $('pet').classList.add('held');
     /* dangling: lean against the way you're pulling */
@@ -235,10 +235,10 @@ sara.on('drag',d=>{
     $('sway').style.transform=`rotate(${lean.toFixed(1)}deg) scale(.97,1.05)`;
   } else { held=false; $('pet').classList.remove('held'); $('sway').style.transform=''; setAwake(); wake(2000); }
 });
-sara.on('geo',g=>{ G=g; sizeStage(); draw(); applyPeek(false); });
-sara.on('pet',p=>swapTo(p&&p.id));
-sara.on('act',n=>{ if(typeof n==='string'&&!held) act(n,n!=='talk'); });
-sara.on('state',s=>{
+buddies.on('geo',g=>{ G=g; sizeStage(); draw(); applyPeek(false); });
+buddies.on('pet',p=>swapTo(p&&p.id));
+buddies.on('act',n=>{ if(typeof n==='string'&&!held) act(n,n!=='talk'); });
+buddies.on('state',s=>{
   const was=ST; ST=Object.assign({},s);
   if(ST.playing&&!was.playing) hop();                                          // a song starts
   else if(ST.playing&&ST.title!==was.title) act('skip',true);                 // on to another one

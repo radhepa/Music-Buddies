@@ -81,9 +81,9 @@ svg .f{fill:currentColor;stroke:none}
 .m.typing i{width:6px;height:6px;border-radius:50%;background:#7aa89d;animation:dot 1s ease-in-out infinite}
 .m.typing i:nth-child(2){animation-delay:.15s}.m.typing i:nth-child(3){animation-delay:.3s}
 @keyframes dot{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-3px);opacity:1}}
-.quick{flex:none;display:flex;gap:6px;padding:4px 14px 8px;overflow-x:auto;scrollbar-width:none}
+.quick{flex:none;display:flex;gap:5px;padding:4px 14px 8px;overflow-x:auto;scrollbar-width:none}
 .quick::-webkit-scrollbar{display:none}
-.quick button{flex:none;padding:6px 11px;border-radius:999px;border:1.5px solid var(--line);font:500 12.5px/1 var(--sans);color:var(--deep);background:var(--paper);
+.quick button{flex:none;padding:6px 9px;border-radius:999px;border:1.5px solid var(--line);font:500 12.5px/1 var(--sans);color:var(--deep);background:var(--paper);
   transition:border-color .15s,background .15s}
 .quick button:hover{border-color:var(--focus);background:#eef6f3}
 .say{flex:none;display:flex;gap:8px;padding:0 12px 12px}

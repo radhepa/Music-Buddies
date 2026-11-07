@@ -1,13 +1,13 @@
-/* main.js · Music Buddies, with Sara the music kappa
+/* main.js · Music Buddies
    ─────────────────────────────────────────────────────────────────────────
-   A desktop pet that plays your music. Sara is a kappa on a lily
-   pad who floats a record in the dish on her head. Drop songs (or a whole
-   folder) on her and they join her library, named after their files. Anything
-   put in Music\Sara joins it too. Tap her for the player: playlists, and
+   A desktop pet that plays your music: Sara the kappa, Kon the kitsune or
+   Kasa the umbrella. Drop songs (or a whole folder) on the pet and they join
+   the library, named after their files. Anything put in Music\Music Buddies
+   joins it too. Tap the pet for the banner, or open the window: playlists, and
    YouTube by search or link with only the player itself, no feed, no comments,
    nothing to click away to.
 
-   Windows: Sara's own small see-through window, and the player beside her.
+   Windows: the pet's own small see-through window, and the player beside it.
    The player page is the music engine (an <audio> for files). A YouTube song
    plays in a small view inside the player (YouTube's own embedded player,
    held on that one video); close the player and the sound carries on. */
@@ -21,13 +21,23 @@ if(!process.argv.includes('--gpu')) app.disableHardwareAcceleration();
 { const p=process.argv.find(x=>x.startsWith('--profile=')); if(p) app.setPath('userData',path.resolve(p.slice(10))); }
 if(!app.requestSingleInstanceLock()){ app.quit(); return; }
 
-/* ════════════════════ settings and library (one file in her own folder) ════════════════════ */
+/* ════════════════════ settings and library (one file in the app's own folder) ════════════════════ */
 const SIZES={xs:80,s:110,m:140,l:180,xl:230};
-const FILE=()=>path.join(app.getPath('userData'),'sara.json');
-/* the app was first called catching-days-sara: bring that library over once */
-try{ const old=path.join(app.getPath('appData'),'catching-days-sara','sara.json');
-  if(!fs.existsSync(FILE())&&fs.existsSync(old)){ fs.mkdirSync(path.dirname(FILE()),{recursive:true}); fs.copyFileSync(old,FILE()); } }catch(e){}
-const FOLDER=()=>path.join(app.getPath('music'),'Sara');
+const FILE=()=>path.join(app.getPath('userData'),'library.json');
+/* the file was sara.json, and before that in catching-days-sara: bring the newest one over once */
+try{ const olds=[path.join(app.getPath('userData'),'sara.json'),path.join(app.getPath('appData'),'catching-days-sara','sara.json')];
+  const old=olds.find(f=>fs.existsSync(f));
+  if(!fs.existsSync(FILE())&&old){ fs.mkdirSync(path.dirname(FILE()),{recursive:true}); fs.copyFileSync(old,FILE()); } }catch(e){}
+const FOLDER=()=>path.join(app.getPath('music'),'Music Buddies');
+/* the songs folder was Music\Sara: move it once, and point its songs at the new place */
+function moveOldFolder(){
+  const old=path.join(app.getPath('music'),'Sara'), now=FOLDER();
+  if(!fs.existsSync(old)) return;
+  try{ if(fs.existsSync(now)&&!fs.readdirSync(now).length) fs.rmdirSync(now); }catch(e){}
+  if(fs.existsSync(now)) return;
+  try{ fs.renameSync(old,now); }catch(e){ return; }            // in use: the songs keep their old paths, which still work
+  lib.moveFolder(S.library,old,now); save(true);
+}
 const DEFAULTS={pos:null,peek:null,win:null,pet:'sara',size:'m',volume:.8,shuffle:false,repeat:'all',view:'all',library:{tracks:[],playlists:[]}};
 let S=null;
 function load(){
@@ -71,13 +81,13 @@ function watchFolder(){
 async function ytSearch(q){
   q=String(q||'').trim().slice(0,200); if(!q) return [];
   /* sp=EgIQAQ%3D%3D: videos only, no channels or playlists */
-  const r=await net.fetch('https://www.youtube.com/results?sp=EgIQAQ%253D%253D&search_query='+encodeURIComponent(q),{headers:{'Accept-Language':'en-US,en;q=0.9'}});
+  const r=await net.fetch('https://www.youtube.com/results?sp=EgIQAQ%253D%253D&search_query='+encodeURIComponent(q),{headers:{'Accept-Language':'en-US,en;q=0.9'},signal:AbortSignal.timeout(10000)});
   return lib.parseSearch(await r.text());
 }
 async function ytInfo(url){
   const id=lib.ytIdOf(url); if(!id) return null;
   try{
-    const r=await net.fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id));
+    const r=await net.fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id),{signal:AbortSignal.timeout(10000)});
     const o=await r.json(); return {yt:id,title:o.title||'YouTube video',channel:o.author_name||''};
   }catch(e){ return {yt:id,title:'YouTube video',channel:''}; }
 }
@@ -104,17 +114,19 @@ function yt(o){
   if(o.cmd==='load'&&/^[\w-]{11}$/.test(o.id)){
     const v=ytEnsure(); v.setVisible(true); v.setBounds(ytSlot);
     /* the embed refuses to play with no referrer, or with YouTube's own; any other site's name will do */
-    v.webContents.loadURL(`https://www.youtube-nocookie.com/embed/${o.id}?autoplay=1&rel=0&iv_load_policy=3&playsinline=1&fs=0&disablekb=1&modestbranding=1`,{httpReferrer:'https://sara.localhost/'});
+    v.webContents.loadURL(`https://www.youtube-nocookie.com/embed/${o.id}?autoplay=1&rel=0&iv_load_policy=3&playsinline=1&fs=0&disablekb=1&modestbranding=1`,{httpReferrer:'https://music-buddies.localhost/'});
+    v.webContents.removeAllListeners('did-finish-load');
     v.webContents.once('did-finish-load',()=>ytRun(`(()=>{const v=document.querySelector('video');if(v){v.volume=${+o.vol||0};v.play().catch(()=>{});}})()`));
-    clearInterval(ytPoll);
-    ytPoll=setInterval(async()=>{ const s=await ytRun(YT_PROBE); if(s) send(playerWin,'yt-state',s); },500);
-    return;
+    ytPollOn(); return;
   }
   if(!ytView||ytView.webContents.isDestroyed()) return;
   const js={play:`v.play().catch(()=>{})`,pause:`v.pause()`,seek:`v.currentTime=${+o.t||0}`,volume:`v.volume=${Math.min(1,Math.max(0,+o.v||0))}`}[o.cmd];
   if(js) ytRun(`(()=>{const v=document.querySelector('video');if(v){${js};}})()`);
+  if(o.cmd==='pause') setTimeout(()=>{ clearInterval(ytPoll); ytPoll=null; },700);      // one last report, then quiet
+  if(o.cmd==='play') ytPollOn();
   if(o.cmd==='stop'){ clearInterval(ytPoll); ytPoll=null; ytView.setVisible(false); ytView.webContents.loadURL('about:blank'); }
 }
+function ytPollOn(){ clearInterval(ytPoll); ytPoll=setInterval(async()=>{ const s=await ytRun(YT_PROBE); if(s) send(playerWin,'yt-state',s); },500); }
 function ytRun(js){
   if(!ytView||ytView.webContents.isDestroyed()) return Promise.resolve(null);
   return ytView.webContents.executeJavaScript(js,true).catch(()=>null);
@@ -216,7 +228,7 @@ setInterval(()=>{ try{ if(petWin&&petWin.isVisible()){ petWin.setAlwaysOnTop(tru
 function createPet(){
   const g=geo();
   petWin=new BrowserWindow({width:g.W,height:g.H,frame:false,transparent:true,resizable:false,movable:false,alwaysOnTop:true,skipTaskbar:true,
-    focusable:true,hasShadow:false,fullscreenable:false,maximizable:false,minimizable:false,show:false,backgroundColor:'#00000000',title:'Sara',
+    focusable:true,hasShadow:false,fullscreenable:false,maximizable:false,minimizable:false,show:false,backgroundColor:'#00000000',title:'Music Buddies',
     webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,sandbox:true,nodeIntegration:false,backgroundThrottling:false}});
   petWin.setIgnoreMouseEvents(true,{forward:true}); ignoreNow=true;
   petWin.loadFile(path.join(__dirname,'pet.html'));
@@ -312,7 +324,7 @@ function wake(){
 }
 
 function addMusic(){
-  dialog.showOpenDialog({title:'Give Sara some music',properties:['openFile','multiSelections'],
+  dialog.showOpenDialog({title:'Add music to Music Buddies',properties:['openFile','multiSelections'],
     filters:[{name:'Music',extensions:['mp3','m4a','aac','wav','ogg','oga','opus','flac','webm','weba']}]})
     .then(r=>{ if(!r.canceled&&r.filePaths.length) send(playerWin,'add-tracks',{tracks:scan(r.filePaths),play:!state.playing,drop:true}); });
 }
@@ -325,7 +337,7 @@ function petMenu(){
     {label:'Next song',click:cmd('next')},
     {type:'separator'},
     {label:'Add music…',click:addMusic},
-    {label:'Open Sara’s folder',click:()=>shell.openPath(ensureFolder())},
+    {label:'Open the Music Buddies folder',click:()=>shell.openPath(ensureFolder())},
     {label:'Pet',submenu:PETS.map(p=>({label:`${p.name} · ${p.kind}`,type:'radio',checked:S.pet===p.id,click:()=>{ S.pet=p.id; save(); syncPet(); }}))
       .concat(state.pet&&state.pet!==S.pet?[{type:'separator'},{label:`This playlist has its own: ${(PETS.find(p=>p.id===state.pet)||{name:state.pet}).name}`,enabled:false}]:[])},
     {label:'Size',submenu:[['xs','Tiny'],['s','Small'],['m','Medium'],['l','Large'],['xl','Huge']].map(([k,l])=>({label:l,type:'radio',checked:S.size===k,click:()=>{
@@ -369,7 +381,7 @@ ipcMain.on('drop-paths',(e,paths)=>{ const tracks=scan(paths); if(tracks.length)
 ipcMain.on('drag-start',(e,press)=>{ closeMini(); dragStart(press); });
 ipcMain.on('drag-end',()=>dragEnd());
 ipcMain.on('tap',()=>toggleMini());
-ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev','shuffle','vol-up','vol-down','repeat-one','repeat-off','keep'].includes(c)||/^vol-(\d|[1-9]\d|100)$/.test(c)) send(playerWin,'cmd',c); });
+ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev','shuffle','vol-up','vol-down','repeat-one','repeat-off','keep'].includes(c)||/^vol-(\d|[1-9]\d|100)$/.test(c)||/^to-[\w-]{1,40}$/.test(c)) send(playerWin,'cmd',c); });
 ipcMain.on('mini-close',()=>closeMini());
 ipcMain.handle('mini-init',()=>({pet:activePet(),state,library:S.library||{tracks:[],playlists:[]}}));
 ipcMain.on('mini-play',(e,o)=>{ if(o&&typeof o.id==='string') send(playerWin,'play-track',{id:o.id,from:String(o.from||'all')}); });
@@ -391,10 +403,11 @@ app.on('before-quit',()=>{ quitting=true; save(true); });
 app.on('second-instance',(e,argv)=>{ if(!playerWin) return; if(argv.includes('--open')) openPlayer(); else wake(); });
 app.whenReady().then(()=>{
   load();
-  createPet(); createPlayer(); createMini(); watchFolder();
+  moveOldFolder(); createPet(); createPlayer(); createMini(); watchFolder();
   if(process.argv.includes('--open')) playerWin.once('ready-to-show',openPlayer);
   screen.on('display-metrics-changed',()=>{ if(petWin) place(virt.x,virt.y,false); });
-  /* the keyboard's media keys work even when Sara isn't in front */
+  screen.on('display-removed',()=>{ if(petWin) restorePlace(); });
+  /* the keyboard's media keys work even when Music Buddies isn't in front */
   const key=(k,c)=>{ try{ globalShortcut.register(k,()=>send(playerWin,'cmd',c)); }catch(e){} };
   key('MediaPlayPause','toggle'); key('MediaNextTrack','next'); key('MediaPreviousTrack','prev');
   require('./hotkeys')('Music Buddies',wake);   // Ctrl+] for Music Buddies, Ctrl+\ for the Catching Days toad

@@ -75,7 +75,40 @@ assert(c('play zzz').do.say.offline);
 assert(c('how long left',{state:{title:'x'},prog:{pos:0,dur:3729}}).say.includes('1:02:09'));
 assert.deepStrictEqual(c('more',{last:'vol-30'}).do,{cmd:'vol-up'});
 assert(VOICES.kon.help.includes(c('what else can you do').say));
+assert.strictEqual(c('remove this song',{state:{title:'x'}}).do,null);                            // never removes from chat
+assert(VOICES.kon.removeHow.includes(c('delete this',{state:{title:'x'}}).say));
+assert(c('play delete').do.yt);                                                                    // a song called that still plays
+/* another buddy, by name */
+assert.deepStrictEqual(c('switch to kasa',{pet:'kon'}).do,{pet:'kasa'});
+assert.deepStrictEqual(c('can i talk to sara',{pet:'kon'}).do,{pet:'sara'});
+assert.deepStrictEqual(c('swtich to sara',{pet:'kon'}).do,{pet:'sara'});                          // typo
+assert.strictEqual(c('switch to kon',{pet:'kon'}).do,null);                                       // already out
+assert(VOICES.kon.swapList.includes(c('switch to sara',{pet:'kon',state:{title:'x',pet:'kon',from:'p1'}}).say.replace('Sara','{b}').replace('Gym Hype','{pl}')));   // a playlist's own pet stays
+assert(VOICES.kon.about.includes(c('what is music buddies').say));
+assert(VOICES.kon.friends.includes(c('who are your friends').say));
+assert(c("what's this?",{state:{title:'Song X'}}).say.includes('Song X'));                       // still the song, not the app
+/* rounds 26-45 */
+assert.deepStrictEqual(c('next buddy',{pet:'sara'}).do,{pet:'kon'});                              // buddies go round
+assert.deepStrictEqual(c('switch buddy',{pet:'kasa'}).do,{pet:'sara'});
+assert.deepStrictEqual(c('add this to gym hype',{state:{title:'x',id:'a'}}).do,{cmd:'to-p1'});
+assert.strictEqual(c('add this to gym hype',{state:{title:'x',id:'b'}}).do,null);                 // already in it
+assert.strictEqual(c('add this to nowhere',{state:{title:'x',id:'a'}}).do,null);                  // no such playlist
+assert.strictEqual(c('check https://youtu.be/dQw4w9WgXcQ').do.link,'https://youtu.be/dQw4w9WgXcQ');               // a pasted link
+assert.deepStrictEqual(c('can you pause please',{state:{title:'x',playing:true}}).do,{cmd:'toggle'});   // polite words don't hide the ask
+assert.strictEqual(c('yes but no',{offer:'chill'}).do,null);                                     // only a plain yes takes the offer
+assert.strictEqual(c('play turn it up').do.yt,'turn it up');                                     // "play" + a title beats the control words
+assert.deepStrictEqual(c('play it again',{state:{title:'x'}}).do,{seek:0});
+assert.deepStrictEqual(c('restart',{state:{title:'x'}}).do,{seek:0});
+assert.deepStrictEqual(c('turn off shuffle',{state:{shuffle:true}}).do,{cmd:'shuffle'});
+assert.deepStrictEqual(c('im tired of this song',{state:{title:'x'}}).do,{cmd:'next'});
+assert.deepStrictEqual(c('too quiet').do,{cmd:'vol-up'});
+assert.strictEqual(c('put some music on').do.play.from,'all');
+assert.strictEqual(c('put on some music').do.play.from,'all');
+assert(c('open the window').do.open);
+assert(c('where are my files').do.open);
+assert(VOICES.kon.sing.includes(c('sing me a song').say));
 assert.strictEqual(Chat.short('Rainy Jazz Cafe - Slow Jazz Music in Coffee Shop Ambience for Work, Study and Relaxation'),'Rainy Jazz Cafe');
 assert.strictEqual(Chat.short('Chill Lofi Mix [chill lo-fi hip hop beats]'),'Chill Lofi Mix');
 assert.strictEqual(Chat.short('[only brackets]'),'[only brackets]');
+assert.strictEqual(Chat.short('Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)'),'Rick Astley - Never Gonna Give You Up');   // the song, not just the artist
 console.log('chat ok');

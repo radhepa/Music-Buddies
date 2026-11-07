@@ -1,7 +1,7 @@
-/* library.js · the plain parts of Sara's music: names, links, search pages, what plays next.
+/* library.js · the plain parts of the music: names, links, search pages, what plays next.
    No Electron here, so test/library.test.js can check it with plain node. */
 'use strict';
-const path=require('path');
+const path=require('path'), {pathToFileURL}=require('url');
 
 const AUDIO=/\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|webm|weba)$/i;
 
@@ -47,4 +47,16 @@ function parseSearch(html){
 
 const {nextIndex}=require('./common.js');   // shared with the player page
 
-module.exports={AUDIO,titleOf,ytIdOf,parseSearch,nextIndex};
+/* a folder was moved (Music\Sara to Music\Music Buddies): point its songs, and the
+   songs taken out of it, at the new place. Paths on Windows don't care about case. */
+function moveFolder(library,old,now){
+  const pre=old.toLowerCase().replace(/[\\/]+$/,'')+path.sep;
+  const moved=p=>typeof p==='string'&&p.toLowerCase().startsWith(pre)?path.join(now,p.slice(pre.length)):null;
+  let n=0;
+  for(const t of library.tracks||[]){ const p=moved(t.path); if(!p) continue;
+    n++; t.path=p; t.url=pathToFileURL(p).href; if(path.dirname(p)===path.resolve(now)) t.sub=path.basename(now); }
+  if(Array.isArray(library.gone)) library.gone=library.gone.map(k=>{ const p=typeof k==='string'&&k.startsWith('f:')&&moved(k.slice(2)); return p?'f:'+p.toLowerCase():k; });
+  return n;
+}
+
+module.exports={AUDIO,titleOf,ytIdOf,parseSearch,nextIndex,moveFolder};

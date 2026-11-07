@@ -1,10 +1,10 @@
-/* preload.js · the only door between Sara's windows and the rest of the program */
+/* preload.js · the only door between the Music Buddies windows and the rest of the program */
 'use strict';
 const {contextBridge,ipcRenderer,webUtils}=require('electron');
 const SEND=['save','state','yt','yt-slot','drop-paths','drag-start','drag-end','tap','pet-menu','player-close','add-music','open-folder','show-file','ignore','pets','set-pet','mini-cmd','mini-close','open-app','mini-play','mini-yt','mini-seek','mini-act','prog'];
 const ON=['act','library','prog','play-track','play-yt','seek','state','open','add-tracks','cmd','yt-state','pet','peek','drag','geo','probe','hit-reset'];
 const INVOKE=['mini-init','init','pet-init','scan','yt-search','yt-info','menu'];
-contextBridge.exposeInMainWorld('sara',{
+contextBridge.exposeInMainWorld('buddies',{
   ask:(ch,data)=>INVOKE.includes(ch)?ipcRenderer.invoke(ch,data):Promise.reject(new Error('no '+ch)),
   send:(ch,data)=>{ if(SEND.includes(ch)) ipcRenderer.send(ch,data); },
   on:(ch,fn)=>{ if(ON.includes(ch)) ipcRenderer.on(ch,(e,d)=>fn(d)); },

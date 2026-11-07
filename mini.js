@@ -48,15 +48,15 @@ function prog(p){
   $('track').setAttribute('aria-valuenow',Math.round(f*100));
   $('track').setAttribute('aria-valuetext',`${fmt(p.pos)} of ${fmt(DUR)}`);
 }
-const cmd=c=>{ quiet=Date.now()+2500; lastCmd=c; sara.send('mini-cmd',c); };
+const cmd=c=>{ quiet=Date.now()+2500; lastCmd=c; buddies.send('mini-cmd',c); };
 $('keep').onclick=()=>{ cmd('keep'); act('bow'); };
 $('play').onclick=()=>cmd('toggle'); $('next').onclick=()=>cmd('next'); $('prev').onclick=()=>cmd('prev');
-$('track').onclick=e=>{ if(!DUR) return; const r=$('track').getBoundingClientRect(); sara.send('mini-seek',Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))); };
+$('track').onclick=e=>{ if(!DUR) return; const r=$('track').getBoundingClientRect(); buddies.send('mini-seek',Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))); };
 $('track').onkeydown=e=>{
   if(!DUR) return; const now=parseFloat($('fill').style.width)/100||0;
   const step={ArrowRight:5,ArrowUp:5,ArrowLeft:-5,ArrowDown:-5,PageUp:30,PageDown:-30}[e.key];
-  if(step!=null){ e.preventDefault(); sara.send('mini-seek',Math.min(1,Math.max(0,now+step/DUR))); }
-  else if(e.key==='Home'){ e.preventDefault(); sara.send('mini-seek',0); }
+  if(step!=null){ e.preventDefault(); buddies.send('mini-seek',Math.min(1,Math.max(0,now+step/DUR))); }
+  else if(e.key==='Home'){ e.preventDefault(); buddies.send('mini-seek',0); }
 };
 
 /* ── chat ── */
@@ -66,7 +66,7 @@ function bubble(m){
 }
 function drawLog(){ $('msgs').innerHTML=log().map(bubble).join(''); scrollDown(); }
 function scrollDown(){ const m=$('msgs'); m.scrollTop=m.scrollHeight; }
-function add(m){ const L=log(); L.push(m); if(L.length>60) L.splice(0,L.length-60); $('msgs').insertAdjacentHTML('beforeend',bubble(m)); scrollDown(); }
+function add(m){ const L=log(); L.push(m); if(L.length>60) L.splice(0,L.length-60); const box=$('msgs'); box.insertAdjacentHTML('beforeend',bubble(m)); while(box.children.length>60) box.firstElementChild.remove(); scrollDown(); }
 function say(text,talk=true){ add({text}); if(talk) faceDo('talk'); }
 let typing=null;
 function dots(on){
@@ -81,23 +81,33 @@ async function ask(text){
   busy=true; add({me:true,text}); dots(true);
   await new Promise(r=>setTimeout(r,380+Math.random()*260));
   const recent=log().filter(m=>!m.me).slice(-8).map(m=>m.text);
-  const r=Chat.reply(text,{voice:voice(),state:ST,library:LIB,offer,recent,prog:{pos:POS,dur:DUR},hour:new Date().getHours(),last:lastCmd}); offer=r.offer||null;
+  const r=Chat.reply(text,{voice:voice(),pet:PET,state:ST,library:LIB,offer,recent,prog:{pos:POS,dur:DUR},hour:new Date().getHours(),last:lastCmd}); offer=r.offer||null;
   dots(false); say(r.say); act(r.act);
   const d=r.do;
   if(!d||!d.cmd) lastCmd='';
+  if(d&&d.pet) setTimeout(()=>buddies.send('set-pet',d.pet),1200);      // let the goodbye be read first
   if(d&&d.cmd) cmd(d.cmd);
-  else if(d&&d.play){ quiet=Date.now()+2500; sara.send('mini-play',d.play); }
+  else if(d&&d.seek!=null) buddies.send('mini-seek',d.seek);
+  else if(d&&d.open) setTimeout(()=>buddies.send(d.open==='app'?'open-app':'open-folder'),600);
+  else if(d&&d.link){
+    dots(true); let one=null;
+    try{ one=await buddies.ask('yt-info',d.link); }catch(e){ one=null; }
+    dots(false);
+    if(!one) say(d.say.missing);
+    else { quiet=Date.now()+4000; buddies.send('mini-yt',one); say(Chat.fill(d.say.found,{t:one.title})); act('nod'); }
+  }
+  else if(d&&d.play){ quiet=Date.now()+2500; buddies.send('mini-play',d.play); }
   else if(d&&d.yt){
     dots(true); let found=null;
-    try{ found=await sara.ask('yt-search',d.yt); }catch(e){ found=null; }
+    try{ found=await buddies.ask('yt-search',d.yt); }catch(e){ found=null; }
     dots(false);
     if(found==null) say(d.say.offline);
     else if(!found.length) say(d.say.missing);
-    else { quiet=Date.now()+4000; sara.send('mini-yt',found[0]); say(Chat.fill(d.say.found,{t:found[0].title})); act('nod'); }
+    else { quiet=Date.now()+4000; buddies.send('mini-yt',found[0]); say(Chat.fill(d.say.found,{t:found[0].title})); act('nod'); }
   }
   busy=false;
 }
-function act(n){ if(!n) return; sara.send('mini-act',n); faceDo(n); }
+function act(n){ if(!n) return; buddies.send('mini-act',n); faceDo(n); }
 $('say').onsubmit=e=>{ e.preventDefault(); if(busy) return; const v=$('in').value; $('in').value=''; ask(v); };   // busy: keep what was typed
 $('quick').onclick=e=>{ const b=e.target.closest('[data-say]'); if(b) ask(b.dataset.say); };
 
@@ -135,7 +145,7 @@ $('lists').onkeydown=e=>{
   $('lists').querySelector(`[data-list="${CSS.escape(LIST)}"]`).focus();
 };
 $('q').oninput=drawSongs;
-$('songs').onclick=e=>{ const b=e.target.closest('[data-id]'); if(!b||b.disabled) return; quiet=Date.now()+2500; sara.send('mini-play',{id:b.dataset.id,from:LIST}); act('nod'); };
+$('songs').onclick=e=>{ const b=e.target.closest('[data-id]'); if(!b||b.disabled) return; quiet=Date.now()+2500; buddies.send('mini-play',{id:b.dataset.id,from:LIST}); act('nod'); };
 
 /* ── tabs ── */
 function tab(which){
@@ -148,24 +158,24 @@ $('tab-chat').onclick=()=>tab('chat'); $('tab-songs').onclick=()=>tab('songs');
 document.querySelector('.tabs').onkeydown=e=>{ if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ e.preventDefault(); const c=$('pane-chat').hidden; tab(c?'chat':'songs'); $(c?'tab-chat':'tab-songs').focus(); } };
 
 /* ── the window ── */
-$('open').onclick=()=>sara.send('open-app');
-$('close').onclick=()=>sara.send('mini-close');
+$('open').onclick=()=>buddies.send('open-app');
+$('close').onclick=()=>buddies.send('mini-close');
 addEventListener('keydown',e=>{
-  if(e.key==='Escape') sara.send('mini-close');
+  if(e.key==='Escape') buddies.send('mini-close');
   const typing=e.target.closest&&e.target.closest('input,textarea');
   if(e.key===' '&&!typing&&!(e.target.closest&&e.target.closest('button,[role=slider]'))){ e.preventDefault(); cmd('toggle'); }
 });
 
-sara.on('state',drawState);
-sara.on('prog',prog);
-sara.on('library',l=>{ LIB=l||{tracks:[],playlists:[]}; if(!$('pane-songs').hidden){ drawLists(); drawSongs(); } });
-sara.on('pet',p=>{ const id=PetKit.get(p&&p.id||p).id; if(id!==PET){ PET=id; drawPet(); if(!log().length&&document.hasFocus()) say(Chat.greet(ST,voice())); } });
-sara.on('open',()=>{
+buddies.on('state',drawState);
+buddies.on('prog',prog);
+buddies.on('library',l=>{ LIB=l||{tracks:[],playlists:[]}; if(!$('pane-songs').hidden){ drawLists(); drawSongs(); } });
+buddies.on('pet',p=>{ const id=PetKit.get(p&&p.id||p).id; if(id!==PET){ PET=id; drawPet(); if(!log().length&&document.hasFocus()) say(Chat.greet(ST,voice())); } });
+buddies.on('open',()=>{
   if(!log().length) say(Chat.greet(ST,voice()));
   if($('pane-chat').hidden) $('q').focus(); else $('in').focus();
 });
 
-sara.ask('mini-init').then(o=>{
+buddies.ask('mini-init').then(o=>{
   o=o||{}; PET=PetKit.get(o.pet).id; LIB=o.library||LIB;
   drawPet(); drawState(o.state||{}); ST.title=ST.title||''; drawLists(); drawSongs();
 });

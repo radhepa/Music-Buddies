@@ -30,6 +30,19 @@ assert.strictEqual(nextIndex(3,1,{shuffle:true},1,()=>.6),2);         // never t
 assert.strictEqual(nextIndex(3,1,{shuffle:true},1,()=>0),0);
 assert.strictEqual(nextIndex(0,0,{}),-1);
 
+const {moveFolder}=require('../library.js');
+if(process.platform==='win32'){
+  const L={tracks:[{kind:'file',path:'C:\\M\\Sara\\a.mp3',sub:'Sara'},{kind:'file',path:'C:\\M\\Sara\\Rock\\b.mp3',sub:'Rock'},
+    {kind:'file',path:'C:\\M\\Sarah\\c.mp3',sub:'Sarah'},{kind:'yt',yt:'abcdefghijk'}],gone:['f:c:\\m\\sara\\d.mp3','yt:x']};
+  assert.strictEqual(moveFolder(L,'C:\\M\\Sara','C:\\M\\Music Buddies'),2);
+  assert.strictEqual(L.tracks[0].path,'C:\\M\\Music Buddies\\a.mp3');
+  assert.strictEqual(L.tracks[0].sub,'Music Buddies');
+  assert.strictEqual(L.tracks[0].url,'file:///C:/M/Music%20Buddies/a.mp3');
+  assert.strictEqual(L.tracks[1].sub,'Rock');                           // a subfolder keeps its name
+  assert.strictEqual(L.tracks[2].path,'C:\\M\\Sarah\\c.mp3');           // a different folder that starts the same is left alone
+  assert.deepStrictEqual(L.gone,['f:c:\\m\\music buddies\\d.mp3','yt:x']);
+}
+
 const {fmt,esc}=require('../common.js');
 assert.strictEqual(fmt(187),'3:07');
 assert.strictEqual(fmt(3729),'1:02:09');

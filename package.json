@@ -2,7 +2,7 @@
   "name": "music-buddies",
   "productName": "Music Buddies",
   "version": "1.0.0",
-  "description": "Music Buddies: a yokai for your desktop who plays your music. drop songs on her, make playlists, and listen to YouTube without the feed.",
+  "description": "Music Buddies: yokai friends for your desktop who play your music. Drop songs on them, make playlists, and listen to YouTube without the feed.",
   "main": "main.js",
   "private": true,
   "scripts": {

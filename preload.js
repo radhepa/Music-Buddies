@@ -1,7 +1,7 @@
 /* preload.js · the only door between Sara's windows and the rest of the program */
 'use strict';
 const {contextBridge,ipcRenderer,webUtils}=require('electron');
-const SEND=['save','state','yt','yt-slot','drop-paths','drag-start','drag-end','tap','pet-menu','player-close','add-music','open-folder','show-file','ignore','pets','set-pet'];
+const SEND=['save','state','yt','yt-slot','drop-paths','drag-start','drag-end','tap','pet-menu','player-close','add-music','open-folder','show-file','ignore','pets','set-pet','mini-cmd','mini-close','open-app'];
 const ON=['state','open','add-tracks','cmd','yt-state','pet','peek','drag','geo','probe','hit-reset'];
 const INVOKE=['init','pet-init','scan','yt-search','yt-info','menu'];
 contextBridge.exposeInMainWorld('sara',{

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com">
+<title>Music Buddies · now playing</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="mini.css">
+<body>
+<div class="card" id="card">
+  <button class="now" id="open-now" title="Open Music Buddies">
+    <i class="disc" aria-hidden="true"></i>
+    <span class="tx"><b id="t">Nothing on yet</b><span id="s">Tap to open Music Buddies</span></span>
+  </button>
+  <div class="ctl">
+    <button class="ic" id="prev" aria-label="Previous song"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f" d="M12.5 3.2v9.6L5.6 8z"/><path d="M3.5 3.5v9"/></svg></button>
+    <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f i-play" d="M5 2.8v10.4L13.2 8z"/><path class="f i-pause" d="M4 3h3v10H4zM9 3h3v10H9z"/></svg></button>
+    <button class="ic" id="next" aria-label="Next song"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f" d="M3.5 3.2v9.6L10.4 8z"/><path d="M12.5 3.5v9"/></svg></button>
+  </div>
+  <button class="ic open" id="open" aria-label="Open Music Buddies" title="Open Music Buddies">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13.5 2.5L8 8M6.5 3.5H4A1.5 1.5 0 0 0 2.5 5v7A1.5 1.5 0 0 0 4 13.5h7a1.5 1.5 0 0 0 1.5-1.5V9.5"/></svg></button>
+</div>
+<script src="mini.js"></script>
+</body>
+</html>

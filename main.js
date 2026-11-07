@@ -125,7 +125,7 @@ function ytRun(js){
    screen is "virtual": push the pet past the left, right or bottom edge and the
    window stays at the edge while the distance pushed becomes how far the pet has
    slipped behind it (p, 0..1). Clicks fall through everywhere but the pet. */
-let petWin=null, playerWin=null;
+let petWin=null, playerWin=null, miniWin=null;
 const FOOT=s=>Math.round(s*.08);                 // under the pad, for its ripples
 function geo(){ const s=SIZES[S.size]||140; return {S:s,W:Math.round(s*1.6),H:Math.round(s*1.5)+FOOT(s),FOOT:FOOT(s),travel:Math.round(s*.8)}; }
 let virt={x:0,y:0}, peek={edge:null,p:0};
@@ -269,10 +269,43 @@ const playerOpen=()=>!!playerWin&&playerWin.isVisible()&&!playerWin.isMinimized(
 function openPlayer(){ if(playerWin.isMinimized()) playerWin.restore(); playerWin.show(); playerWin.focus(); send(playerWin,'open',{}); }
 function closePlayer(){ if(playerWin) playerWin.hide(); }
 const togglePlayer=()=>playerOpen()?closePlayer():openPlayer();
-/* Ctrl+]: bring her out and the window up; pressed again while it's in front, put the window away */
+
+/* ════════════════════ the banner: a small now-playing strip by the pet ════════════════════
+   Tapping the pet (or Ctrl+]) brings this up, not the whole app: the song, play/pause/skip, and a door to
+   the window. It goes away as soon as you click anywhere else. */
+const MW=360, MH=84;
+function petRect(){
+  const g=geo(), b=petWin.getBounds(), s=g.S;
+  if(peek.edge==='r'&&peek.p>.5) return {x:b.x+g.W-s*.6,y:b.y+g.H/2-s*.45,w:s*.6,h:s*.8};
+  if(peek.edge==='l'&&peek.p>.5) return {x:b.x,y:b.y+g.H/2-s*.45,w:s*.6,h:s*.8};
+  if(peek.edge==='b'&&peek.p>.5) return {x:b.x+g.W/2-s*.5,y:b.y+g.H-s*.45,w:s,h:s*.45};
+  return {x:b.x+(g.W-s)/2,y:b.y+g.H-g.FOOT-s,w:s,h:s+g.FOOT};
+}
+function createMini(){
+  miniWin=new BrowserWindow({width:MW,height:MH,frame:false,transparent:true,resizable:false,alwaysOnTop:true,skipTaskbar:true,
+    hasShadow:false,fullscreenable:false,maximizable:false,minimizable:false,show:false,backgroundColor:'#00000000',title:'Music Buddies · now playing',
+    webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,sandbox:true,nodeIntegration:false}});
+  miniWin.loadFile(path.join(__dirname,'mini.html'));
+  miniWin.on('blur',()=>closeMini());
+}
+let miniShut=0;   // when it last went away: the tap on the pet that blurred it shouldn't bring it straight back
+const miniOpen=()=>!!miniWin&&miniWin.isVisible();
+function openMini(){
+  if(!miniWin||!petWin) return;
+  /* above the pet, leaning to whichever side has room; below it when it's hiding at the top */
+  const r=petRect(), wa=workAreaAt(r.x+r.w/2,r.y+r.h/2);
+  const x=Math.round(Math.min(Math.max(r.x+r.w/2-MW/2,wa.x),wa.x+wa.width-MW));
+  let y=r.y-MH+8; if(y<wa.y) y=r.y+r.h-8;
+  miniWin.setBounds({x,y:Math.round(Math.min(Math.max(y,wa.y),wa.y+wa.height-MH)),width:MW,height:MH});
+  send(miniWin,'state',state);
+  miniWin.show(); miniWin.focus(); miniWin.setAlwaysOnTop(true,'pop-up-menu');
+}
+function closeMini(){ if(miniOpen()){ miniWin.hide(); miniShut=Date.now(); } }
+function toggleMini(){ if(miniOpen()) closeMini(); else if(Date.now()-miniShut>350) openMini(); }
+/* Ctrl+]: bring her out with the banner; pressed again, put it away */
 function wake(){
   if(petWin&&!petWin.isVisible()) petWin.showInactive();
-  if(playerOpen()&&playerWin.isFocused()) closePlayer(); else openPlayer();
+  if(miniOpen()) closeMini(); else openMini();
 }
 
 function addMusic(){
@@ -284,7 +317,7 @@ let state={playing:false,title:'',pet:''};
 function petMenu(){
   const cmd=c=>()=>send(playerWin,'cmd',c);
   return Menu.buildFromTemplate([
-    {label:playerOpen()?'Close Music Buddies':'Open Music Buddies',accelerator:'CommandOrControl+]',click:togglePlayer},
+    {label:playerOpen()?'Close Music Buddies':'Open Music Buddies',click:togglePlayer},
     {label:state.playing?'Pause':'Play',click:cmd('toggle')},
     {label:'Next song',click:cmd('next')},
     {type:'separator'},
@@ -319,7 +352,7 @@ ipcMain.on('save',(e,o)=>{
   if(o.library&&Array.isArray(o.library.tracks)) S.library=o.library;
   save();
 });
-ipcMain.on('state',(e,o)=>{ state=Object.assign(state,o||{}); if(typeof state.pet!=='string') state.pet=''; send(petWin,'state',state); syncPet(); });
+ipcMain.on('state',(e,o)=>{ state=Object.assign(state,o||{}); if(typeof state.pet!=='string') state.pet=''; send(petWin,'state',state); send(miniWin,'state',state); syncPet(); });
 ipcMain.handle('pet-init',()=>{ sentPet=activePet(); return {geo:geo(),peek,pet:sentPet,state}; });
 ipcMain.on('pets',(e,list)=>{ if(Array.isArray(list)&&list.length) PETS=list.filter(p=>p&&typeof p.id==='string').map(p=>({id:p.id,name:String(p.name),kind:String(p.kind)})); });
 ipcMain.on('ignore',(e,on)=>{ if(!drag) setIgnore(!!on); });
@@ -330,9 +363,12 @@ ipcMain.on('yt-slot',(e,r)=>{
   if(ytView&&!ytView.webContents.isDestroyed()) ytView.setBounds(ytSlot);
 });
 ipcMain.on('drop-paths',(e,paths)=>{ const tracks=scan(paths); if(tracks.length) send(playerWin,'add-tracks',{tracks,play:!state.playing,drop:true}); });
-ipcMain.on('drag-start',(e,press)=>dragStart(press));
+ipcMain.on('drag-start',(e,press)=>{ closeMini(); dragStart(press); });
 ipcMain.on('drag-end',()=>dragEnd());
-ipcMain.on('tap',()=>togglePlayer());
+ipcMain.on('tap',()=>toggleMini());
+ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev'].includes(c)) send(playerWin,'cmd',c); });
+ipcMain.on('mini-close',()=>closeMini());
+ipcMain.on('open-app',()=>{ closeMini(); openPlayer(); });
 ipcMain.on('pet-menu',()=>petMenu().popup({window:petWin}));
 ipcMain.on('player-close',()=>closePlayer());
 ipcMain.on('set-pet',(e,id)=>{ if(PETS.some(p=>p.id===id)){ S.pet=id; save(); syncPet(); } });
@@ -342,10 +378,10 @@ ipcMain.on('show-file',(e,p)=>{ if(typeof p==='string'&&fs.existsSync(p)) shell.
 
 let quitting=false;
 app.on('before-quit',()=>{ quitting=true; save(true); });
-app.on('second-instance',()=>{ if(playerWin) openPlayer(); });
+app.on('second-instance',()=>{ if(playerWin) wake(); });   // Ctrl+] held by the toad starts us again: same as pressing it here
 app.whenReady().then(()=>{
   load();
-  createPet(); createPlayer(); watchFolder();
+  createPet(); createPlayer(); createMini(); watchFolder();
   screen.on('display-metrics-changed',()=>{ if(petWin) place(virt.x,virt.y,false); });
   /* the keyboard's media keys work even when Sara isn't in front */
   const key=(k,c)=>{ try{ globalShortcut.register(k,()=>send(playerWin,'cmd',c)); }catch(e){} };
@@ -353,7 +389,7 @@ app.whenReady().then(()=>{
   require('./hotkeys')('Music Buddies',wake);   // Ctrl+] for Music Buddies, Ctrl+\ for the Catching Days toad
 });
 /* --test: a handle the test harness can reach over the inspector (move her, read where she is) */
-if(process.argv.includes('--test')) global.__pet={place,virtFor,layout,geo,resizePet,syncPet,wake,togglePlayer,playerOpen,keys:()=>["CommandOrControl+\\","CommandOrControl+]"].map(k=>globalShortcut.isRegistered(k)),
+if(process.argv.includes('--test')) global.__pet={place,virtFor,layout,geo,resizePet,syncPet,wake,togglePlayer,playerOpen,toggleMini,miniOpen,keys:()=>["CommandOrControl+\\","CommandOrControl+]"].map(k=>globalShortcut.isRegistered(k)),
   get peek(){ return peek; }, get virt(){ return virt; }, get S(){ return S; }, bounds:()=>petWin.getBounds(), dragEnd:()=>{ const b=petWin.getBounds(); place(b.x,b.y,true); }};
 app.on('will-quit',()=>globalShortcut.unregisterAll());
 app.on('window-all-closed',()=>app.quit());

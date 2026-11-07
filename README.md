@@ -58,11 +58,13 @@ pet's right-click menu really quits.
 
 ## Controls
 
-- **Ctrl+]** from anywhere: bring out Music Buddies and its window. Press it
-  again while the window is in front to put the window away.
+- **Ctrl+]** from anywhere: bring out Music Buddies with its little banner.
+  Press it again to put the banner away.
 - **Ctrl+\** from anywhere: bring out the Catching Days desktop toad. Each app
   starts the other if it isn't running (once each has been started one time).
-- Tap the pet: open or close the window. Drag it to move it.
+- Tap the pet: a small banner pops up by it with the song and play, back and
+  skip. Tap the song or the window button on it to open the whole app. Click
+  anywhere else and the banner goes away. Drag the pet to move it.
 - **Hide it in an edge:** drag it past the left, right or bottom of the screen.
   On a side it leans in from behind the edge; at the bottom it sinks till only
   its eyes show. Drag it out again whenever you like.

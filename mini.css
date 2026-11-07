@@ -1,0 +1,37 @@
+/* mini.css · the little now-playing banner by the pet: the song, play/pause, and a door to the app */
+:root{--panel:#fbf8f2;--panel2:#f1ebdf;--line:#e4dccd;--tx:#1f2e2c;--dim:#5f6b67;--focus:#2f7a74;--deep:#0f3b41;--sans:'Outfit','Segoe UI',sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;font:400 14px/1.3 var(--sans);color:var(--tx);user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none;padding:0}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+svg .f{fill:currentColor;stroke:none}
+
+/* the window is a little bigger than the card, so its shadow has room */
+.card{position:absolute;inset:8px 10px 12px;display:flex;align-items:center;gap:6px;padding:0 8px 0 10px;
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 22px -8px rgba(15,59,65,.4);
+  animation:in .16s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+
+.now{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:52px;padding:0 6px 0 2px;border-radius:12px;text-align:left}
+.now:hover{background:var(--panel2)}
+.disc{width:38px;height:38px;flex:none;border-radius:50%;
+  background:radial-gradient(circle,#1f2e2c 0 1.5px,#cfe6c8 2px 5px,#8fc49a 5.5px 7px,transparent 7.5px),
+    repeating-radial-gradient(circle,#22302e 0 1.4px,#2c3b39 1.6px 2.8px);box-shadow:0 2px 5px #0005}
+.playing .disc{animation:spin 1.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tx{min-width:0;display:flex;flex-direction:column;gap:1px}
+.tx b{font:600 13.5px/1.25 var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx span{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.ctl{display:flex;align-items:center;gap:2px;flex:none}
+.ic{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--dim);flex:none}
+.ic:hover{background:var(--panel2);color:var(--tx)}
+.play{width:36px;height:36px;border-radius:50%;background:var(--deep);color:var(--panel);display:flex;align-items:center;justify-content:center}
+.play:hover{background:#15505a}
+.play:active{transform:scale(.94)}
+.play svg{width:16px;height:16px}
+.play .i-pause,.playing .play .i-play{display:none}
+.playing .play .i-pause{display:inline}
+.open{margin-left:2px;border-left:1px solid var(--line);border-radius:0 10px 10px 0;width:34px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}

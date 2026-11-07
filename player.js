@@ -133,7 +133,7 @@ function drawNow(){
   $('seek').disabled=!t;
   /* a playlist with its own pet sends that pet out while one of its songs plays */
   const from=cur&&plOf(cur.from);
-  const st=JSON.stringify({playing,title:t?t.title:'',pet:t&&from&&from.pet||''});
+  const st=JSON.stringify({playing,title:t?t.title:'',sub:t?$('np-s').textContent:'',pet:t&&from&&from.pet||''});
   if(st!==lastState){ lastState=st; sara.send('state',JSON.parse(st)); }
   drawTime();
 }

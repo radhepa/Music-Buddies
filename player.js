@@ -10,12 +10,11 @@ let cur=null;                                    // {id, queue:[ids], from: the 
 let playing=false, pos=0, dur=0, seeking=false, ytLoadAt=0, ytDone=false, errRun=0;
 let results=[];                                  // the last YouTube search, as songs not (yet) in the library
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const {nextIndex,fmt,esc}=Common;                // common.js
 const keyOf=t=>t.kind==='yt'?'yt:'+t.yt:'f:'+String(t.path).toLowerCase();
 const byId=id=>L.tracks.find(t=>t.id===id)||results.find(t=>t.id===id)||null;
 const plOf=id=>L.playlists.find(p=>p.id===id)||null;
 const idsOf=v=>v==='all'?L.tracks.map(t=>t.id):((plOf(v)||{ids:[]}).ids.filter(id=>L.tracks.some(t=>t.id===id)));
-const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); const h=Math.floor(s/3600), m=Math.floor(s/60)%60, x=String(s%60).padStart(2,'0'); return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`; };
 
 let saveT=null;
 function save(){ clearTimeout(saveT); saveT=setTimeout(()=>sara.send('save',{library:L,volume:vol,shuffle,repeat,view}),300); }
@@ -92,17 +91,6 @@ function bad(){
   if(++errRun>=cur.queue.length){ errRun=0; stop(); return; }
   step(1,false);
 }
-/* same rule as library.js nextIndex (tested there); the page can't load node modules */
-function nextIndex(n,i,{shuffle,repeat,auto},dir=1){
-  if(n<=0) return -1;
-  if(repeat==='one'&&auto&&i>=0) return i;
-  if(shuffle&&n>1){ let j=Math.floor(Math.random()*(n-1)); if(j>=i) j++; return j; }
-  const j=i+dir;
-  if(j>=n) return repeat==='all'?0:-1;
-  if(j<0) return repeat==='all'?n-1:0;
-  return j;
-}
-
 audio.addEventListener('playing',()=>{ playing=true; errRun=0; drawNow(); render(); });
 audio.addEventListener('pause',()=>{ playing=false; drawNow(); render(); });
 audio.addEventListener('timeupdate',()=>{ pos=audio.currentTime; dur=audio.duration||0; drawTime(); });
@@ -111,7 +99,7 @@ audio.addEventListener('ended',()=>step(1,true));
 audio.addEventListener('error',()=>{ if(audio.getAttribute('src')) bad(); });
 
 sara.on('yt-state',s=>{
-  const t=cur&&byId(cur.id); if(!t||t.kind!=='yt') return;
+  const t=cur&&byId(cur.id); if(!t||t.kind!=='yt'||t.bad) return;   // bad: already marked; the poll keeps reporting the error every 500ms
   if(s.err||(!s.ok&&Date.now()-ytLoadAt>15000)){ bad(); return; }
   if(!s.ok) return;
   pos=s.t; dur=s.d;
@@ -302,7 +290,7 @@ document.addEventListener('keydown',e=>{
 /* ── from Sara and the main process ── */
 sara.on('add-tracks',o=>add(o.tracks,{play:!!o.play,quiet:!o.drop}));   // the folder watch is quiet; a drop or Add music is not
 const setVol=v=>{ vol=Math.max(0,Math.min(1,v)); audio.volume=vol; sara.send('yt',{cmd:'volume',v:vol}); drawModes(); save(); };
-sara.on('cmd',c=>({toggle,next:()=>step(1,false),prev,shuffle:()=>$('shuffle').click(),
+sara.on('cmd',c=>/^vol-\d+$/.test(c)?setVol(+c.slice(4)/100):({toggle,next:()=>step(1,false),prev,shuffle:()=>$('shuffle').click(),
   'vol-up':()=>setVol(vol+.15),'vol-down':()=>setVol(vol-.15),'repeat-one':()=>setRepeat('one'),'repeat-off':()=>setRepeat('all'),keep})[c]?.());
 /* keep the YouTube song that's on (one found from the banner's chat lives only in the results till then) */
 function keep(){ const t=cur&&byId(cur.id); if(!t||t.kind!=='yt'||L.tracks.some(x=>x.kind==='yt'&&x.yt===t.yt)) return; const {id,...n}=t; add([n]); drawNow(); }

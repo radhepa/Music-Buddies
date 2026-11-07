@@ -34,7 +34,7 @@ function parseSearch(html){
     if(!o||typeof o!=='object'||out.length>=20) return;
     if(o.videoRenderer&&o.videoRenderer.videoId){
       const v=o.videoRenderer;
-      if(!seen.has(v.videoId)&&v.lengthText){            // no length: a live stream or a premiere
+      if(!seen.has(v.videoId)&&/^[\w-]{11}$/.test(v.videoId)&&v.lengthText){   // no length: a live stream or a premiere; the id goes into the page's HTML
         seen.add(v.videoId);
         out.push({yt:v.videoId,title:text(v.title),channel:text(v.ownerText||v.longBylineText),length:text(v.lengthText)});
       }
@@ -45,16 +45,6 @@ function parseSearch(html){
   return out;
 }
 
-/* where the queue goes after index i of n: shuffle picks any other song,
-   repeat 'all' wraps round, 'off' stops at the end (-1), 'one' replays when a song ends by itself (auto) */
-function nextIndex(n,i,{shuffle,repeat,auto},dir=1,rnd=Math.random){
-  if(n<=0) return -1;
-  if(repeat==='one'&&auto&&i>=0) return i;
-  if(shuffle&&n>1){ let j=Math.floor(rnd()*(n-1)); if(j>=i) j++; return j; }
-  const j=i+dir;
-  if(j>=n) return repeat==='all'?0:-1;
-  if(j<0) return repeat==='all'?n-1:0;
-  return j;
-}
+const {nextIndex}=require('./common.js');   // shared with the player page
 
 module.exports={AUDIO,titleOf,ytIdOf,parseSearch,nextIndex};

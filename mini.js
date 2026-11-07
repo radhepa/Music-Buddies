@@ -2,11 +2,10 @@
    and asks it to do things. Two tabs: talk to the buddy (chat.js + voices.js, offline), or pick from your songs. */
 'use strict';
 const $=id=>document.getElementById(id);
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const mmss=s=>{ s=Math.max(0,Math.floor(s||0)); const h=Math.floor(s/3600), m=Math.floor(s/60)%60, x=String(s%60).padStart(2,'0'); return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`; };   // same as player.js fmt
+const {fmt,esc}=Common;                          // common.js
 PetKit.injectCSS();
 
-let PET='sara', ST={}, LIB={tracks:[],playlists:[]}, LIST='all', DUR=0, quiet=0, faceAct=0;
+let PET='sara', ST={}, LIB={tracks:[],playlists:[]}, LIST='all', DUR=0, POS=0, lastCmd='', quiet=0, faceAct=0;
 const LOG={};                                    // chat history per buddy, so swapping buddies keeps each one's talk
 const log=()=>LOG[PET]||(LOG[PET]=[]);
 const voice=()=>VOICES[PET]||VOICES.sara;
@@ -43,13 +42,13 @@ function drawState(s){
   if(ST.id!==was.id||ST.playing!==was.playing) drawSongs();
 }
 function prog(p){
-  DUR=p.dur||0; const f=DUR?Math.min(1,(p.pos||0)/DUR):0;
+  DUR=p.dur||0; POS=p.pos||0; const f=DUR?Math.min(1,(p.pos||0)/DUR):0;
   $('fill').style.width=(f*100).toFixed(2)+'%';
-  $('t0').textContent=mmss(p.pos); $('t1').textContent=DUR?mmss(DUR):'0:00';
+  $('t0').textContent=fmt(p.pos); $('t1').textContent=DUR?fmt(DUR):'0:00';
   $('track').setAttribute('aria-valuenow',Math.round(f*100));
-  $('track').setAttribute('aria-valuetext',`${mmss(p.pos)} of ${mmss(DUR)}`);
+  $('track').setAttribute('aria-valuetext',`${fmt(p.pos)} of ${fmt(DUR)}`);
 }
-const cmd=c=>{ quiet=Date.now()+2500; sara.send('mini-cmd',c); };
+const cmd=c=>{ quiet=Date.now()+2500; lastCmd=c; sara.send('mini-cmd',c); };
 $('keep').onclick=()=>{ cmd('keep'); act('bow'); };
 $('play').onclick=()=>cmd('toggle'); $('next').onclick=()=>cmd('next'); $('prev').onclick=()=>cmd('prev');
 $('track').onclick=e=>{ if(!DUR) return; const r=$('track').getBoundingClientRect(); sara.send('mini-seek',Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))); };
@@ -81,16 +80,18 @@ async function ask(text){
   text=String(text||'').trim().slice(0,200); if(!text||busy) return;
   busy=true; add({me:true,text}); dots(true);
   await new Promise(r=>setTimeout(r,380+Math.random()*260));
-  const r=Chat.reply(text,{pet:PET,voice:voice(),state:ST,library:LIB,offer}); offer=r.offer||null;
+  const recent=log().filter(m=>!m.me).slice(-8).map(m=>m.text);
+  const r=Chat.reply(text,{voice:voice(),state:ST,library:LIB,offer,recent,prog:{pos:POS,dur:DUR},hour:new Date().getHours(),last:lastCmd}); offer=r.offer||null;
   dots(false); say(r.say); act(r.act);
   const d=r.do;
+  if(!d||!d.cmd) lastCmd='';
   if(d&&d.cmd) cmd(d.cmd);
   else if(d&&d.play){ quiet=Date.now()+2500; sara.send('mini-play',d.play); }
   else if(d&&d.yt){
     dots(true); let found=null;
     try{ found=await sara.ask('yt-search',d.yt); }catch(e){ found=null; }
     dots(false);
-    if(found==null) say(voice().offline[0]);
+    if(found==null) say(d.say.offline);
     else if(!found.length) say(d.say.missing);
     else { quiet=Date.now()+4000; sara.send('mini-yt',found[0]); say(Chat.fill(d.say.found,{t:found[0].title})); act('nod'); }
   }

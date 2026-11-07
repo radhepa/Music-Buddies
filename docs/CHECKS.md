@@ -1,10 +1,12 @@
-# Ten design and mechanics checks
+# Design and mechanics checks
 
-Ten rounds of checks on the banner (chat and songs), the pets' new moves and Kon's
+Twenty-five rounds of checks. The first ten on the banner (chat and songs), the pets' new moves and Kon's
 redraw. Each round tested the real app in a test profile, driven over the DevTools
 protocol, with screenshots. Three testers, role-played, rated how helpful it was
 (out of 10), and asked for things. A request was taken only when it helps the app's
 job (music while you work, with a small friend) at a cost that fits; refusals say why.
+Rounds 11 to 25 came after a full code audit and are about a smarter chat; they are
+at the end.
 
 - **Maya**, college student: studies with music on, wants it quick and not distracting.
 - **Theo**, music student: listens closely, cares about songs, queues and timing.
@@ -112,3 +114,125 @@ Fired all 13 acts on each buddy in the real pet window and caught two frames of 
   three.
 - Maya: "the banner's title cuts off long YouTube names." **Not taken:** the whole name
   is in the song list just below, and a second line would push the chat down.
+
+## Fifteen more checks (rounds 11 to 25)
+
+A full code audit came first: one real bug (below, round 11), some copied helpers, and an
+unchecked id from YouTube's page. Then the chat got smarter and every buddy got more
+lines (81 to 143 each, 39 to 60 kinds of reply). Each round ran in the real app, with
+the same testers, over the DevTools protocol, with screenshots.
+
+| Round | Focus | Maya | Theo | Priya |
+|---|---|---|---|---|
+| 11 | A broken YouTube video | 9 | 8 | 9 |
+| 12 | Shared helpers, checked video ids | 9 | 8 | 9 |
+| 13 | Typos, the buddy's name, "ok" and "lol" | 9 | 9 | 9 |
+| 14 | Who sings this, how long left | 9 | 9 | 9 |
+| 15 | Volume and shuffle in words | 10 | 9 | 9 |
+| 16 | Feelings and offers | 10 | 9 | 9 |
+| 17 | Late night and morning | 10 | 9 | 9 |
+| 18 | More like this, surprise me | 10 | 9 | 9 |
+| 19 | No line twice in a row | 10 | 9 | 10 |
+| 20 | Jokes and dancing | 10 | 9 | 10 |
+| 21 | Questions about your library | 10 | 9 | 10 |
+| 22 | Help, and the longest line | 10 | 9 | 10 |
+| 23 | Speed and CPU | 10 | 9 | 10 |
+| 24 | The quick chips | 10 | 9 | 10 |
+| 25 | Full run again, docs | 10 | 9 | 10 |
+
+## Round 11 · a broken YouTube video
+- Found: when a YouTube video failed, the player marked it broken, stopped, and saved the
+  library, then did it again every half second for as long as the app stayed open (the
+  page keeps reporting the error). **Fixed:** a song already marked broken is left alone.
+  Live: one save in 14 seconds instead of 28.
+- Priya: "retry broken videos on their own?" **Not taken:** that is the same loop again.
+  Clicking the song tries it once more.
+
+## Round 12 · shared helpers, checked video ids
+- Found: "what plays next", times (3:07) and HTML escaping were written twice, once for
+  the player and once for the banner. **Fixed:** one copy in `common.js`, used by both
+  pages and by the tests.
+- Found: video ids read from YouTube's search page went into the list's HTML unchecked.
+  **Fixed:** only real 11-character ids are kept; a test feeds it a bad one.
+- Priya: "add a linter or types?" **Not taken:** the app has no build step. Every file
+  passes `node --check`, and the tests run on every push.
+
+## Round 13 · typos, the buddy's name, "ok" and "lol"
+- *skp*, *puase*, *shuflle* now work. Only messages nothing else understood get a typo
+  pass, so real words like *look* are never "fixed" into *loop*.
+- "kon, skip" and "hey kasa" work: the name is just who you're talking to.
+- *ok*, *lol*, *haha* get a short answer instead of "I don't get it".
+- Maya: "two things in one message, like 'skip and turn it up'?" **Not taken:** one thing
+  per message keeps the answers predictable, and each is one quick line.
+
+## Round 14 · who sings this, how long left
+- Found: a YouTube mix title was read as the singer. **Fixed:** YouTube songs use the
+  channel; files use "Artist - Song" in the name, then the folder.
+- Found: a 3-hour mix said "213:52 left". **Fixed:** times over an hour show hours
+  (3:33:52).
+- Theo: "show the lyrics or the BPM?" **Not taken:** both need an online service and a
+  key, and the app can't hear YouTube's sound.
+
+## Round 15 · volume and shuffle in words
+- *volume 40*, *max volume*, *mute* work, and *a bit more* right after a volume change
+  goes the same way again (live: *volume 3*, then *a bit more*, gave 18%).
+- Found: "stop shuffling" paused the music. **Fixed:** shuffle on and off are read before
+  pause, and turning off shuffle when it is off does nothing.
+- Maya: "a volume slider in the banner?" **Not taken:** *volume 40* and the main window's
+  slider cover it, and the banner is small.
+
+## Round 16 · feelings and offers
+- *I'm tired*, *stressed*, *sad*, *bored* and *good* get an answer in the buddy's voice
+  and an offer (calm, happy or upbeat music). *yes* plays it.
+- Found: *nah* to an offer skipped the song. **Fixed:** "no" to an offer is just no.
+- Found: Kasa called stress "sleepy". **Fixed:** stress has its own words.
+- Asking for music by a feeling ("something sad") still plays right away.
+- Maya: "a study mode that runs the whole session?" **Not taken:** that is Catching Days'
+  job; Music Buddies is the music.
+
+## Round 17 · late night and morning
+- A hello after midnight gets a gentle "it's late" and an offer of calm music; in the
+  morning, a morning hello.
+- Priya: "let me set the quiet hours?" **Not taken:** one more setting for a single line
+  of text.
+
+## Round 18 · more like this, surprise me
+- *more like this* tries the same singer, then the same mood, then YouTube, then the same
+  playlist. *another one like this* no longer skips.
+- *surprise me* never picks the song already on.
+- Theo: "learn from what I skip?" **Not taken:** a few skips say little, and a buddy that
+  quietly changes what it plays is harder to trust.
+
+## Round 19 · no line twice in a row
+- Each buddy now has 143 lines (was 81). A reply skips lines said lately; when all were
+  said, the oldest one comes back.
+- Found: the fourth skip in a row repeated the last line. **Fixed** by that fallback.
+- Found: "I'm offline" was always the same line. **Fixed:** it picks like the rest.
+
+## Round 20 · jokes and dancing
+- *tell me a joke* gets a short one in the buddy's voice; *dance* plays the special move.
+- Maya: "more jokes!" **Taken:** each buddy has several now.
+- Theo: "let me write my own lines?" **Not taken:** `voices.js` is plain text anyone can
+  edit, and a settings screen for it is a lot for few users.
+
+## Round 21 · questions about your library
+- *what playlists do I have?* names them; with none, it says how to make one.
+- Priya: "list every song in the chat?" **Not taken:** the Songs tab is right there and
+  scrolls.
+
+## Round 22 · help, and the longest line
+- *help* and *what else can you do* list the new things.
+- The longest line (Kon's help, 139 letters) fits in four lines of the banner.
+
+## Round 23 · speed and CPU
+- A reply takes 7 ms with 5000 songs; 200 letters of nonsense take 1 ms.
+- Idle, the app uses about 0% CPU.
+
+## Round 24 · the quick chips
+- The chips under the chat still fit and still work with the new replies.
+- Maya: "a 'Who sings this?' chip?" **Not taken:** the row is full; typing it works.
+
+## Round 25 · full run again, docs
+- `npm test` passes (library and chat, about 30 new checks), every script passes
+  `node --check`, and a search finds no API keys. The chat is still all offline rules.
+- Live chats with Sara, Kon and Kasa read right, in each one's voice.

@@ -66,9 +66,14 @@ seek bar, then two tabs.
   watery, Kon is sly and theatrical, Kasa shouts. Ask for things in plain words:
   *play Bohemian Rhapsody*, *put on my gym playlist*, *something chill*, *hype*,
   *surprise me*, *skip*, *pause*, *louder*, *shuffle*, *loop this*, *what's this?*,
-  *what's next?*, *save this*. A song or playlist you have wins; otherwise it looks
-  on YouTube and plays the first video. Tell it you're studying and it offers
-  something calm; say *yes* and it plays. The chips under the chat are shortcuts.
+  *what's next?*, *save this*, *who sings this?*, *how long left?*, *more like
+  this*, *volume 40*, *what playlists do I have?*. A song or playlist you have
+  wins; otherwise it looks on YouTube and plays the first video. Tell it you're
+  studying, tired or sad and it answers and offers music for it; say *yes* and it
+  plays, *no* and it doesn't. It greets you differently late at night and in the
+  morning, tells jokes, dances when asked, gets past small typos (*skp*, *puase*),
+  and doesn't say the same line twice in a row. The chips under the chat are
+  shortcuts.
 - **Songs.** Pick a playlist, search it, tap a song. The song plays with that
   list as its queue.
 - A YouTube song found from the chat isn't kept until you say *save this* or tap
@@ -112,5 +117,7 @@ dragging, moods). The drawings are in `pets/`: `kit.js` is what they share,
 and each pet has its own file. `pets/preview.html?pets=sara,kon` shows them in
 every mood (`&acts=1` replays the sixteen moves). `mini.html`/`mini.js` is the
 banner; `chat.js` reads what you type and `voices.js` holds every line each buddy
-can say. `library.js` and `chat.js` hold the plain rules (names, links, what plays
-next, what a message means), checked by `npm test` here and on every push.
+can say. `library.js`, `common.js` and `chat.js` hold the plain rules (names, links,
+what plays next, times, what a message means), checked by `npm test` here and on
+every push. `common.js` is shared by the pages and node. The checks the app went
+through are in [docs/CHECKS.md](docs/CHECKS.md).

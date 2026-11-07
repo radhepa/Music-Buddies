@@ -369,7 +369,7 @@ ipcMain.on('drop-paths',(e,paths)=>{ const tracks=scan(paths); if(tracks.length)
 ipcMain.on('drag-start',(e,press)=>{ closeMini(); dragStart(press); });
 ipcMain.on('drag-end',()=>dragEnd());
 ipcMain.on('tap',()=>toggleMini());
-ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev','shuffle','vol-up','vol-down','repeat-one','repeat-off','keep'].includes(c)) send(playerWin,'cmd',c); });
+ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev','shuffle','vol-up','vol-down','repeat-one','repeat-off','keep'].includes(c)||/^vol-(\d|[1-9]\d|100)$/.test(c)) send(playerWin,'cmd',c); });
 ipcMain.on('mini-close',()=>closeMini());
 ipcMain.handle('mini-init',()=>({pet:activePet(),state,library:S.library||{tracks:[],playlists:[]}}));
 ipcMain.on('mini-play',(e,o)=>{ if(o&&typeof o.id==='string') send(playerWin,'play-track',{id:o.id,from:String(o.from||'all')}); });

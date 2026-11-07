@@ -15,7 +15,7 @@ assert.strictEqual(ytIdOf('lofi beats'),null);
 assert.strictEqual(ytIdOf(`https://example.com/?v=${id}`),null);
 
 const blob={contents:{a:[{videoRenderer:{videoId:id,title:{runs:[{text:'Lo-fi '},{text:'beats'}]},ownerText:{runs:[{text:'Chan'}]},lengthText:{simpleText:'3:12'}}},
-  {videoRenderer:{videoId:'live0000000',title:{runs:[{text:'Live'}]}}},{videoRenderer:{videoId:id,title:{runs:[{text:'dup'}]},lengthText:{simpleText:'1:00'}}}]}};
+  {videoRenderer:{videoId:'live0000000',title:{runs:[{text:'Live'}]}}},{videoRenderer:{videoId:'"><img src=x>',title:{runs:[{text:'odd id'}]},lengthText:{simpleText:'1:00'}}},{videoRenderer:{videoId:id,title:{runs:[{text:'dup'}]},lengthText:{simpleText:'1:00'}}}]}};
 const html=`<script>var ytInitialData = ${JSON.stringify(blob)};</script>`;
 assert.deepStrictEqual(parseSearch(html),[{yt:id,title:'Lo-fi beats',channel:'Chan',length:'3:12'}]);
 assert.deepStrictEqual(parseSearch('<html>nothing</html>'),[]);
@@ -29,4 +29,10 @@ assert.strictEqual(nextIndex(3,0,{repeat:'off'},-1),0);
 assert.strictEqual(nextIndex(3,1,{shuffle:true},1,()=>.6),2);         // never the song that just played
 assert.strictEqual(nextIndex(3,1,{shuffle:true},1,()=>0),0);
 assert.strictEqual(nextIndex(0,0,{}),-1);
+
+const {fmt,esc}=require('../common.js');
+assert.strictEqual(fmt(187),'3:07');
+assert.strictEqual(fmt(3729),'1:02:09');
+assert.strictEqual(fmt(NaN),'0:00');
+assert.strictEqual(esc('<b a="1">&'),'&lt;b a=&quot;1&quot;&gt;&amp;');
 console.log('library ok');

@@ -8,6 +8,8 @@
      playing   the music is on
      fidget    now and then while idle, ~2.4s of business
      sleepy    nothing playing for five minutes
+     dance-N   beside playing: which of three dances this song gets
+     act-NAME  one act at a time (PetKit.ACTS has them all and their lengths)
    And the window's own reactions: a hop on a tap, a new song, coming out of
    an edge and changing pets; a wiggle when songs are dropped; a lean while dragged.
 
@@ -65,9 +67,9 @@ function applyPeek(animate){
 const hiding=()=>!!(PEEK.edge&&PEEK.p>.5);
 
 /* ── always moving; how smoothly depends on whether anything's happening ── */
-let busyUntil=0, hovering=false, held=false, paceT=null;
-const IDLE_MS=66, BUSY_MS=33;
-function setAwake(){ pace(hovering||held||Date.now()<busyUntil?BUSY_MS:IDLE_MS); }
+let busyUntil=0, smoothUntil=0, hovering=false, held=false, paceT=null;
+const IDLE_MS=66, BUSY_MS=33, ACT_MS=16;      // an act gets the full 60 frames a second, so it never stutters
+function setAwake(){ pace(Date.now()<smoothUntil?ACT_MS:hovering||held||Date.now()<busyUntil?BUSY_MS:IDLE_MS); }
 function wake(ms){ busyUntil=Math.max(busyUntil,Date.now()+ms); setAwake(); clearTimeout(paceT); paceT=setTimeout(setAwake,busyUntil-Date.now()+30); }
 /* every animation is paused and moved on by hand. A paused CSS animation outlives
    the class that started it, so the ones nothing asks for any more (and finished
@@ -105,22 +107,43 @@ let livelyAt=Date.now(), fidgetT=null;
 function mood(){
   const a=$('art'), sleepy=!ST.playing&&Date.now()-livelyAt>SLEEP_MS;
   a.classList.toggle('playing',!!ST.playing);
+  PetKit.DANCES.forEach((c,i)=>a.classList.toggle(c,!!ST.playing&&i===danceFor(ST.title)));
+  if(!ST.playing&&!sleepy&&!yawned&&Date.now()-livelyAt>SLEEP_MS-40000){ yawned=true; act('yawn'); }
   a.classList.toggle('sleepy',sleepy);
   if(ST.playing||sleepy) a.classList.remove('fidget');
   const d=PetKit.get(PET), t=ST.title;
   a.title=t?`${d.name} · ${ST.playing?'playing':'paused on'} ${t}`:`${d.name} · drop music on me`;
 }
-function lively(){ const was=$('art').classList.contains('sleepy'); livelyAt=Date.now(); mood(); if(was) wake(2000); }
+/* the same song always gets the same dance */
+function danceFor(t){ let h=0; for(const c of String(t||'')) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h)%PetKit.DANCES.length; }
+let yawned=false;
+function lively(){ const was=$('art').classList.contains('sleepy'); livelyAt=Date.now(); yawned=false; mood(); if(was){ wake(2000); act('startle',true); } }
 setInterval(mood,15000);
 (function fidgetLater(){
   fidgetT=setTimeout(()=>{
     const a=$('art');
-    if(!ST.playing&&!held&&!a.classList.contains('sleepy')){
-      a.classList.add('fidget'); wake(2800); setTimeout(()=>a.classList.remove('fidget'),2600);
+    if(!ST.playing&&!held&&!hiding()&&!acting&&!a.classList.contains('sleepy')){
+      /* idle business: mostly small things, now and then the pet's own move */
+      const pick=['fidget','look','look','stretch','shake','special'][Math.floor(Math.random()*6)];
+      if(pick==='fidget'){ a.classList.add('fidget'); wake(2800); setTimeout(()=>a.classList.remove('fidget'),2600); }
+      else act(pick);
     }
     fidgetLater();
-  },25000+Math.random()*25000);
+  },18000+Math.random()*22000);
 })();
+
+/* ── acts: one at a time; a new one waits for the last to finish, unless it matters more ── */
+let acting='', actT=null;
+function act(name,force=false){
+  const ms=PetKit.ACTS[name]; if(!ms) return;
+  const a=$('art');
+  if(acting&&!force) return;
+  if(acting){ a.classList.remove('act-'+acting); void a.offsetWidth; }
+  a.classList.remove('fidget');
+  acting=name; a.classList.add('act-'+name);
+  smoothUntil=Date.now()+ms+80; wake(ms+200);
+  clearTimeout(actT); actT=setTimeout(()=>{ a.classList.remove('act-'+name); acting=''; setAwake(); },ms);
+}
 
 /* ── reactions ── */
 let hopT=null;
@@ -139,12 +162,13 @@ function swapTo(id){
 }
 
 /* ── the window lets clicks through everywhere but the pet ── */
-let ignoring=true;
+let ignoring=true, tiltAt=0;
 function setIgnore(on,force=false){ if(!force&&on===ignoring) return; ignoring=on; sara.send('ignore',on); }
 function overPet(x,y){ const el=document.elementFromPoint(x,y); return !!(el&&el.closest('#art')); }
 function hover(over,force=false){
   setIgnore(!over,force);
-  if(over!==hovering){ hovering=over; setAwake(); if(!over) wake(2500); }
+  if(over!==hovering){ hovering=over; setAwake(); if(!over) wake(2500);
+    else if(!held&&!hiding()&&Date.now()-tiltAt>12000){ tiltAt=Date.now(); act('tilt'); } }
 }
 document.addEventListener('mousemove',e=>{ if(!held&&!down) hover(overPet(e.clientX,e.clientY)); });
 /* main reads the cursor too (Windows can stop forwarding moves to a click-through
@@ -195,7 +219,7 @@ window.addEventListener('drop',e=>{
   e.preventDefault(); overN=0; stage.classList.remove('over');
   const paths=sara.paths(e.dataTransfer.files);
   if(!paths.length) return;
-  sara.send('drop-paths',paths); cheer(); lively();
+  sara.send('drop-paths',paths); cheer(); lively(); setTimeout(()=>act('bow'),700);
 });
 
 /* ── messages from main ── */
@@ -213,9 +237,12 @@ sara.on('drag',d=>{
 });
 sara.on('geo',g=>{ G=g; sizeStage(); draw(); applyPeek(false); });
 sara.on('pet',p=>swapTo(p&&p.id));
+sara.on('act',n=>{ if(typeof n==='string'&&!held) act(n,n!=='talk'); });
 sara.on('state',s=>{
   const was=ST; ST=Object.assign({},s);
-  if(ST.playing&&(!was.playing||ST.title!==was.title)) hop();   // a song starts, or a new one comes on
+  if(ST.playing&&!was.playing) hop();                                          // a song starts
+  else if(ST.playing&&ST.title!==was.title) act('skip',true);                 // on to another one
+  else if(!ST.playing&&was.playing) act('pause',true);                        // the music stops
   if(ST.playing!==was.playing) lively(); else mood();
 });
 

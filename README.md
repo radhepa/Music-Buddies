@@ -5,7 +5,11 @@ on a lily pad who floats a record in the dish on her head, or one of her
 friends. Your own songs, and YouTube without the feed.
 
 **Start her:** double-click `Start Music Buddies.bat` (the first run downloads Electron,
-about 100 MB). Or `npm install` then `npm start`.
+about 100 MB). Or `npm install` then `npm start`. `npm start -- --open` starts with the
+window open (the desktop and Start-menu shortcuts use it).
+
+No accounts and no API keys: the chat runs offline, and YouTube is searched the way a
+browser would.
 
 ## Giving her music
 
@@ -36,9 +40,14 @@ right-click the pet, then *Pet*). A
 playlist can have its own: right-click the playlist, then *Pet for this
 playlist*. While a song from that playlist plays, its pet comes out.
 
-Each pet breathes and blinks. It dances while music plays, fidgets now and
-then, and dozes off after five minutes of quiet. It hops when you tap it or
-when a new song comes on, and wiggles when you drop songs on it.
+Each pet breathes and blinks, and has sixteen moves of its own, all drawn for it:
+three dances (each song gets one of them, always the same one for that song),
+and a wave, look around, stretch, yawn, shake, head tilt, a skip when the song
+changes, a startled "oh!" when it stops, talking, nodding, a startle when it
+wakes, a bow, and one special trick each (Sara rolls her record round her dish,
+Kon fans out his nine tails, Kasa furls up and pops open). Now and then it does
+one on its own; it dozes off after five minutes of quiet. Moves play at the
+screen's full 60 frames a second; standing still it drops to 15 to save power.
 
 ## YouTube, without YouTube
 
@@ -47,6 +56,26 @@ it; **+** keeps it in your library. It plays in YouTube's own player, shown
 small and held to that one video: no recommendations, comments or feed, and
 nothing in it opens a page. Close the window and the music keeps going while
 Sara sits there with her record turning.
+
+## The banner: talk to your buddy
+
+Tap the pet and a banner pops up beside it: the song, play, back, skip and a
+seek bar, then two tabs.
+
+- **Chat.** Type to your buddy. Each one talks its own way: Sara is gentle and
+  watery, Kon is sly and theatrical, Kasa shouts. Ask for things in plain words:
+  *play Bohemian Rhapsody*, *put on my gym playlist*, *something chill*, *hype*,
+  *surprise me*, *skip*, *pause*, *louder*, *shuffle*, *loop this*, *what's this?*,
+  *what's next?*, *save this*. A song or playlist you have wins; otherwise it looks
+  on YouTube and plays the first video. Tell it you're studying and it offers
+  something calm; say *yes* and it plays. The chips under the chat are shortcuts.
+- **Songs.** Pick a playlist, search it, tap a song. The song plays with that
+  list as its queue.
+- A YouTube song found from the chat isn't kept until you say *save this* or tap
+  the heart.
+
+Esc or a click anywhere else puts the banner away. The arrow button opens the
+whole window.
 
 ## The window
 
@@ -62,9 +91,7 @@ pet's right-click menu really quits.
   Press it again to put the banner away.
 - **Ctrl+\** from anywhere: bring out the Catching Days desktop toad. Each app
   starts the other if it isn't running (once each has been started one time).
-- Tap the pet: a small banner pops up by it with the song and play, back and
-  skip. Tap the song or the window button on it to open the whole app. Click
-  anywhere else and the banner goes away. Drag the pet to move it.
+- Tap the pet: the banner pops up by it (see above). Drag the pet to move it.
 - **Hide it in an edge:** drag it past the left, right or bottom of the screen.
   On a side it leans in from behind the edge; at the bottom it sinks till only
   its eyes show. Drag it out again whenever you like.
@@ -83,5 +110,7 @@ Removing a song never deletes the file.
 the player and the music engine; `pet.js` is the pet's window (peeking,
 dragging, moods). The drawings are in `pets/`: `kit.js` is what they share,
 and each pet has its own file. `pets/preview.html?pets=sara,kon` shows them in
-every mood. `library.js` holds the
-plain rules (names, links, what plays next), checked by `npm test`.
+every mood (`&acts=1` replays the sixteen moves). `mini.html`/`mini.js` is the
+banner; `chat.js` reads what you type and `voices.js` holds every line each buddy
+can say. `library.js` and `chat.js` hold the plain rules (names, links, what plays
+next, what a message means), checked by `npm test` here and on every push.

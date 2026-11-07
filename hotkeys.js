@@ -17,7 +17,7 @@ module.exports=function hotkeys(me,wake){
   /* the way I was started, minus the one-off switches (kept by name, not by --profile's folder) */
   if(!process.argv.includes('--test')) try{
     const dir=path.join(app.getPath('appData'),me);
-    const args=process.argv.slice(1).filter(a=>!/^--(make-shortcut|start-at-login|inspect|remote-debugging-port)/.test(a));
+    const args=process.argv.slice(1).filter(a=>!/^--(make-shortcut|start-at-login|inspect|remote-debugging-port|open$|open=)/.test(a));
     fs.mkdirSync(dir,{recursive:true});
     fs.writeFileSync(path.join(dir,'launch.json'),JSON.stringify({exe:process.execPath,args}));
   }catch(e){}

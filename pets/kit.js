@@ -5,6 +5,11 @@
      .playing   the music is on          .fidget   a little idle business, about 2.4s, now and then
      .sleepy    paused a long while      (.pk-look marks the eyes: the window measures them to peek over an edge)
    The character (all but the pad) sits in one bare <g class="pk-body">: the window hops it (.pk-hop) on taps and drops.
+   Acts: one at a time, the window sets .act-<name> on the same ancestor for the time in PetKit.ACTS, then takes it off.
+   Each pet answers every act with its own CSS. An act must start and end at the rest pose (keyframes 0% and 100%
+   are the resting transform), move only transform and opacity, and fit inside its time. The dances are the
+   exception: .dance-1/2/3 sit beside .playing for a whole song and loop; each pet's dance-N rules replace its
+   plain .playing body motion (so a song gets one of three different dances, never two stacked).
    House motion rule: every moving group is wrapped in translate() so it pivots on its own 0,0. */
 'use strict';
 (function(){
@@ -61,10 +66,27 @@ const BASE=`svg *{transform-box:view-box;transform-origin:0 0}
 .sleepy .pk-z.z2{animation-delay:-1.6s}
 @keyframes pk-z{0%{transform:translate(0,0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translate(7px,-16px) scale(1.1);opacity:0}}
 @media (prefers-reduced-motion:reduce){svg *{animation:none!important}}`;
+/* every act, how long the window keeps its class on (ms), and what brings it out */
+const ACTS={
+  wave:1600,     // hello: the banner opens, or the chat says hi
+  look:2400,     // idle: looks one way, then the other
+  stretch:2200,  // idle: a big stretch
+  yawn:2400,     // idle, getting drowsy; also just before falling asleep
+  shake:1200,    // idle: shakes itself off
+  tilt:1400,     // the pointer comes over it: a curious head tilt
+  skip:1000,     // next / previous song: a quick whoosh
+  pause:1000,    // the music stops: a little "oh!"
+  talk:1400,     // the buddy says something in the chat
+  nod:1000,      // the chat did what you asked
+  startle:900,   // woken up from sleep
+  special:2800,  // now and then: this pet's own signature move
+  bow:1400       // songs added, or a new playlist
+};
+const DANCES=['dance-1','dance-2','dance-3'];
 const PETS={}, ORDER=[];
 let n=0;
 window.PetKit={
-  r2,pad,notes,vinylDef,zz,
+  r2,pad,notes,vinylDef,zz,ACTS,DANCES,
   register(def){ if(!PETS[def.id]) ORDER.push(def.id); PETS[def.id]=def; },
   list:()=>ORDER.map(id=>PETS[id]),
   get:id=>PETS[id]||PETS[ORDER[0]],

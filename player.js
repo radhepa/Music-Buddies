@@ -133,12 +133,17 @@ function drawNow(){
   $('seek').disabled=!t;
   /* a playlist with its own pet sends that pet out while one of its songs plays */
   const from=cur&&plOf(cur.from);
-  const st=JSON.stringify({playing,title:t?t.title:'',sub:t?$('np-s').textContent:'',pet:t&&from&&from.pet||''});
+  /* what plays after this one, when that's known (shuffle picks at the time) */
+  const q=cur&&cur.queue||[], j=t&&!shuffle?nextIndex(q.length,q.indexOf(t.id),{shuffle,repeat:repeat==='one'?'all':repeat,auto:false},1):-1, up=j>=0&&q[j]!==t.id&&byId(q[j]);
+  const st=JSON.stringify({up:up?up.title:'',playing,title:t?t.title:'',sub:t?$('np-s').textContent:'',pet:t&&from&&from.pet||'',
+    id:t?t.id:'',from:cur&&cur.from||'',shuffle,repeat,kind:t?t.kind:'',saved:!t||t.kind!=='yt'||L.tracks.some(x=>x.kind==='yt'&&x.yt===t.yt)});
   if(st!==lastState){ lastState=st; sara.send('state',JSON.parse(st)); }
   drawTime();
 }
+let progAt=0;
 function drawTime(){
   $('t0').textContent=fmt(pos); $('t1').textContent=fmt(dur);
+  if(Date.now()-progAt>450){ progAt=Date.now(); sara.send('prog',{pos,dur}); }     // the banner's bar
   if(!seeking){ const p=dur?pos/dur:0; $('seek').value=Math.round(p*1000); $('seek').style.setProperty('--p',p); }
 }
 function drawModes(){
@@ -183,8 +188,9 @@ function render(){
 $('play').onclick=toggle;
 $('next').onclick=()=>step(1,false);
 $('prev').onclick=prev;
-$('shuffle').onclick=()=>{ shuffle=!shuffle; drawModes(); save(); };
-$('repeat').onclick=()=>{ repeat={all:'one',one:'off',off:'all'}[repeat]; drawModes(); save(); };
+$('shuffle').onclick=()=>{ shuffle=!shuffle; drawModes(); save(); lastState=''; drawNow(); };
+function setRepeat(m){ repeat=m; drawModes(); save(); drawNow(); }
+$('repeat').onclick=()=>setRepeat({all:'one',one:'off',off:'all'}[repeat]);
 $('seek').addEventListener('input',e=>{ seeking=true; const p=e.target.value/1000; e.target.style.setProperty('--p',p); $('t0').textContent=fmt(p*dur); });
 $('seek').addEventListener('change',e=>{ seeking=false; if(dur) seekTo(e.target.value/1000*dur); });
 $('vol').addEventListener('input',e=>{ vol=e.target.value/100; audio.volume=vol; e.target.style.setProperty('--p',vol); sara.send('yt',{cmd:'volume',v:vol}); save(); });
@@ -295,7 +301,15 @@ document.addEventListener('keydown',e=>{
 
 /* ── from Sara and the main process ── */
 sara.on('add-tracks',o=>add(o.tracks,{play:!!o.play,quiet:!o.drop}));   // the folder watch is quiet; a drop or Add music is not
-sara.on('cmd',c=>({toggle,next:()=>step(1,false),prev})[c]?.());
+const setVol=v=>{ vol=Math.max(0,Math.min(1,v)); audio.volume=vol; sara.send('yt',{cmd:'volume',v:vol}); drawModes(); save(); };
+sara.on('cmd',c=>({toggle,next:()=>step(1,false),prev,shuffle:()=>$('shuffle').click(),
+  'vol-up':()=>setVol(vol+.15),'vol-down':()=>setVol(vol-.15),'repeat-one':()=>setRepeat('one'),'repeat-off':()=>setRepeat('all'),keep})[c]?.());
+/* keep the YouTube song that's on (one found from the banner's chat lives only in the results till then) */
+function keep(){ const t=cur&&byId(cur.id); if(!t||t.kind!=='yt'||L.tracks.some(x=>x.kind==='yt'&&x.yt===t.yt)) return; const {id,...n}=t; add([n]); drawNow(); }
+/* from the banner: a song from a list, a YouTube find, a spot in the song */
+sara.on('play-track',o=>{ const t=o&&byId(o.id); if(!t) return; if(t.bad) delete t.bad; errRun=0; const from=o.from==='all'||plOf(o.from)?o.from:'all'; playId(t.id,idsOf(from),from); });
+sara.on('play-yt',r=>{ if(!r||!r.yt) return; const t=Object.assign({kind:'yt',id:'r:'+r.yt},r); results=[t].concat(results.filter(x=>x.id!==t.id)); errRun=0; playId(t.id,[t.id],'yt'); });
+sara.on('seek',f=>{ if(dur&&f>=0&&f<=1){ seekTo(f*dur); drawTime(); } });
 const sendSlot=()=>{ const r=$('slot').getBoundingClientRect(); sara.send('yt-slot',{x:r.left,y:r.top,w:r.width,h:r.height}); };
 sara.on('open',()=>{ sendSlot(); });
 /* the header shows whichever pet is out */

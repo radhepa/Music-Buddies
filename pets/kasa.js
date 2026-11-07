@@ -142,6 +142,8 @@ function kasa(ID){
         </g>
         <path class="ks-lip" d="M-5 -48 Q0 -43.6 5 -48" fill="none" stroke="${DARK}" stroke-width="1.2" stroke-linecap="round"/>
         <path class="ks-grin" d="M-7.4 -48 C-3 -47.4 3 -47.4 7.4 -48 C6.4 -40 -6.4 -40 -7.4 -48Z" fill="#7a2a2a" stroke="${DARK}" stroke-width=".6" stroke-linejoin="round"/>
+        <!-- an open mouth, hidden until he talks or yawns; it hinges on its top lip -->
+        <g transform="translate(0 -48)"><g class="ks-mouth"><path d="M-5 0 C-3 -.5 3 -.5 5 0 C4.6 8.6 -4.6 8.6 -5 0Z" fill="#7a2a2a" stroke="${DARK}" stroke-width=".6" stroke-linejoin="round"/></g></g>
         <g transform="translate(0 -46)"><g class="ks-tongue">
           <path d="M-3.2 0 C-5.4 8 -4.6 17 1.6 24 C7 19 6 9 3.4 0Z" fill="url(#${ID}tongue)" stroke="#b23a4a" stroke-width=".5" stroke-linejoin="round"/>
           <path d="M.2 3 C-.6 10 .2 16 1.8 21" fill="none" stroke="#b23a4a" stroke-width=".5" opacity=".55"/>
@@ -159,7 +161,7 @@ PetKit.register({id:'kasa',name:'Kasa',kind:'kasa-obake',blurb:'Hops on one leg 
 .ks-tongue{transition:transform .9s ease-in-out}
 .ks-blink{animation:ks-blink 5.8s ease-in-out infinite}
 .ks-gaze{animation:ks-gaze 11s ease-in-out infinite}
-.ks-closed,.ks-doze,.ks-grin{opacity:0}
+.ks-closed,.ks-doze,.ks-grin,.ks-mouth{opacity:0}
 .playing .ks-lean{transform:none}
 .playing .ks-open,.playing .ks-lip{opacity:0}
 .playing .ks-closed,.playing .ks-grin{opacity:1}
@@ -189,5 +191,202 @@ PetKit.register({id:'kasa',name:'Kasa',kind:'kasa-obake',blurb:'Hops on one leg 
 .sleepy .ks-doze{opacity:1}
 .sleepy .ks-lean{transform:rotate(4deg)}
 .sleepy .ks-canopy{transform:translateY(3px) rotate(3deg) scale(.85,.97)}
-.sleepy .ks-tongue{transform:rotate(6deg)}`});
+.sleepy .ks-tongue{transform:rotate(6deg)}
+/* ── the three dances: each replaces the plain playing hop, wobble and wag for a whole song.
+   :where() keeps them at the same weight as .playing, so source order decides: dances beat .playing, acts beat both ── */
+/* dance-1, the pogo: big hops with a hard squash and stretch, the canopy flaring at the top, arms up */
+.playing:where(.dance-1) .ks-hop{animation:ks-d1-body .86s cubic-bezier(.4,0,.6,1) infinite}
+.playing:where(.dance-1) .ks-canopy{animation:ks-d1-canopy .86s ease-in-out infinite}
+.playing:where(.dance-1) .ks-tongue{animation:ks-d1-tongue .86s ease-in-out infinite}
+.playing:where(.dance-1) .ks-chime{animation:ks-d1-chime .86s ease-in-out infinite}
+.playing:where(.dance-1) .ks-strip{animation:ks-d1-strip .43s ease-in-out infinite}
+.playing:where(.dance-1) .ks-armL{animation:ks-d1-armL .86s ease-in-out infinite}
+.playing:where(.dance-1) .ks-armR{animation:ks-d1-armR .86s ease-in-out infinite}
+@keyframes ks-d1-body{0%,100%{transform:translate(0,0) scale(1.14,.86)}18%{transform:translate(0,-4px) scale(.98,1.04)}50%{transform:translate(0,-16px) scale(.92,1.1)}82%{transform:translate(0,-3px) scale(1,1)}}
+@keyframes ks-d1-canopy{0%,100%{transform:scale(1.06,.94)}22%{transform:scale(.96,1.04)}58%{transform:scale(1.14,.96)}84%{transform:scale(.98,1.02)}}
+@keyframes ks-d1-tongue{0%,100%{transform:rotate(0) scale(1,.85)}30%{transform:rotate(-6deg) scale(1,1.1)}62%{transform:rotate(0) scale(1,1.2)}84%{transform:rotate(5deg) scale(1,1)}}
+@keyframes ks-d1-chime{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
+@keyframes ks-d1-strip{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+@keyframes ks-d1-armL{0%,100%{transform:rotate(95deg)}50%{transform:rotate(130deg)}}
+@keyframes ks-d1-armR{0%,100%{transform:rotate(-95deg)}50%{transform:rotate(-130deg)}}
+/* dance-2, the sway: he rocks side to side on the geta while the canopy swings wide; tongue, chime, strip and arms trail behind */
+.playing:where(.dance-2) .ks-hop{animation:ks-d2-body 1.72s ease-in-out infinite}
+.playing:where(.dance-2) .ks-canopy{animation:ks-d2-canopy 1.72s ease-in-out infinite}
+.playing:where(.dance-2) .ks-tongue{animation:ks-d2-tongue 1.72s ease-in-out -1.58s infinite}
+.playing:where(.dance-2) .ks-chime{animation:ks-d2-chime 1.72s ease-in-out -1.55s infinite}
+.playing:where(.dance-2) .ks-strip{animation:ks-d2-strip 1.72s ease-in-out -1.48s infinite}
+.playing:where(.dance-2) .ks-armL,.playing:where(.dance-2) .ks-armR{animation:ks-d2-arm 1.72s ease-in-out -1.6s infinite}
+@keyframes ks-d2-body{0%,100%{transform:translate(-7px,0) scale(1.04,.96)}25%{transform:translate(0,-4px) scale(.98,1.03)}50%{transform:translate(7px,0) scale(1.04,.96)}75%{transform:translate(0,-4px) scale(.98,1.03)}}
+@keyframes ks-d2-canopy{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(16deg)}}
+@keyframes ks-d2-tongue{0%,100%{transform:rotate(14deg)}50%{transform:rotate(-14deg)}}
+@keyframes ks-d2-chime{0%,100%{transform:rotate(22deg)}50%{transform:rotate(-22deg)}}
+@keyframes ks-d2-strip{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}
+@keyframes ks-d2-arm{0%,100%{transform:rotate(22deg)}50%{transform:rotate(-22deg)}}
+/* dance-3, stomp stomp spin: two stamps of the geta, then a hop with a full twirl of the canopy */
+.playing:where(.dance-3) .ks-hop{animation:ks-d3-body 1.72s ease-in-out infinite}
+.playing:where(.dance-3) .ks-canopy{animation:ks-d3-canopy 1.72s ease-in-out infinite}
+.playing:where(.dance-3) .ks-tongue{animation:ks-d3-tongue 1.72s ease-in-out infinite}
+.playing:where(.dance-3) .ks-chime{animation:ks-d3-chime 1.72s ease-in-out infinite}
+.playing:where(.dance-3) .ks-strip{animation:ks-d3-strip 1.72s ease-in-out infinite}
+.playing:where(.dance-3) .ks-armL{animation:ks-d3-armL 1.72s ease-in-out infinite}
+.playing:where(.dance-3) .ks-armR{animation:ks-d3-armR 1.72s ease-in-out infinite}
+@keyframes ks-d3-body{0%,100%{transform:translate(0,0) scale(1,1)}12%{transform:translate(0,-6px) scale(.97,1.03)}25%{transform:translate(0,0) scale(1.12,.88)}37%{transform:translate(0,-6px) scale(.97,1.03)}50%{transform:translate(0,0) scale(1.12,.88)}60%{transform:translate(0,0) scale(1.06,.94)}75%{transform:translate(0,-12px) scale(.94,1.06)}92%{transform:translate(0,0) scale(1.08,.92)}}
+@keyframes ks-d3-canopy{0%,100%{transform:rotate(0) scale(1,1)}14%{transform:rotate(-5deg) scale(1.03,.98)}27%{transform:rotate(0) scale(1.05,.95)}39%{transform:rotate(5deg) scale(1.03,.98)}52%{transform:rotate(0) scale(1.05,.95)}62%{transform:rotate(-3deg) scale(1,1.02)}72%{transform:rotate(2deg) scale(.08,1.04)}82%{transform:rotate(0) scale(-1,1.02)}92%{transform:rotate(-2deg) scale(.08,1.04)}}
+@keyframes ks-d3-tongue{0%,100%{transform:rotate(0) scale(1,1)}14%{transform:rotate(-8deg) scale(1,1.05)}27%{transform:rotate(6deg) scale(1,.92)}39%{transform:rotate(-8deg) scale(1,1.05)}52%{transform:rotate(6deg) scale(1,.92)}78%{transform:rotate(20deg) scale(1,.9)}90%{transform:rotate(-12deg) scale(1,1.05)}}
+@keyframes ks-d3-chime{0%,100%{transform:rotate(0)}14%{transform:rotate(-10deg)}27%{transform:rotate(8deg)}39%{transform:rotate(-10deg)}52%{transform:rotate(8deg)}70%{transform:rotate(20deg)}84%{transform:rotate(-24deg)}94%{transform:rotate(8deg)}}
+@keyframes ks-d3-strip{0%,100%{transform:rotate(0)}16%{transform:rotate(-12deg)}29%{transform:rotate(10deg)}41%{transform:rotate(-12deg)}54%{transform:rotate(10deg)}72%{transform:rotate(28deg)}86%{transform:rotate(-28deg)}95%{transform:rotate(10deg)}}
+@keyframes ks-d3-armL{0%,100%{transform:rotate(20deg)}25%{transform:rotate(90deg)}37%{transform:rotate(20deg)}50%{transform:rotate(90deg)}75%{transform:rotate(120deg)}}
+@keyframes ks-d3-armR{0%,100%{transform:rotate(-20deg)}25%{transform:rotate(-90deg)}37%{transform:rotate(-20deg)}50%{transform:rotate(-90deg)}75%{transform:rotate(-120deg)}}
+/* ── acts: each starts and ends at the rest pose; the tongue, chime and paper strip lag a beat behind the body ── */
+/* wave: the right arm waves high, the canopy leaning into it */
+.act-wave .ks-armR{animation:ks-wave-arm 1.6s ease-in-out both}
+.act-wave .ks-canopy{animation:ks-wave-canopy 1.6s ease-in-out both}
+.act-wave .ks-tongue{animation:ks-wave-tongue 1.6s ease-in-out both}
+@keyframes ks-wave-arm{0%,100%{transform:rotate(0)}18%{transform:rotate(-150deg)}34%{transform:rotate(-118deg)}50%{transform:rotate(-160deg)}66%{transform:rotate(-122deg)}80%{transform:rotate(-146deg)}}
+@keyframes ks-wave-canopy{0%,100%{transform:rotate(0)}24%,76%{transform:rotate(4deg)}}
+@keyframes ks-wave-tongue{0%,100%{transform:rotate(0)}32%,82%{transform:rotate(-8deg)}}
+/* look: the eye darts left, then right; the canopy and tongue follow late */
+.act-look .ks-gaze{animation:ks-look-gaze 2.4s ease-in-out both}
+.act-look .ks-canopy{animation:ks-look-canopy 2.4s ease-in-out both}
+.act-look .ks-tongue{animation:ks-look-tongue 2.4s ease-in-out both}
+@keyframes ks-look-gaze{0%,100%{transform:translate(0,0)}14%,40%{transform:translate(-4px,.3px)}54%,82%{transform:translate(4px,.3px)}}
+@keyframes ks-look-canopy{0%,100%{transform:rotate(0)}24%,42%{transform:rotate(-4deg)}64%,84%{transform:rotate(4deg)}}
+@keyframes ks-look-tongue{0%,100%{transform:rotate(0)}28%,44%{transform:rotate(6deg)}68%,86%{transform:rotate(-6deg)}}
+/* stretch: a crouch, then the handle shoots tall and the canopy opens wide, arms up, the eye shut in a happy arc (the white fades so no blank disc is left) */
+.act-stretch .ks-hop{animation:ks-stretch-body 2.2s ease-in-out both}
+.act-stretch .ks-canopy{animation:ks-stretch-canopy 2.2s ease-in-out both}
+.act-stretch .ks-armL{animation:ks-stretch-armL 2.2s ease-in-out both}
+.act-stretch .ks-armR{animation:ks-stretch-armR 2.2s ease-in-out both}
+.act-stretch .ks-open,.act-stretch .pk-look{animation:ks-stretch-eye 2.2s ease-in-out both}
+.act-stretch .ks-closed{animation:ks-stretch-shut 2.2s ease-in-out both}
+.act-stretch .ks-tongue{animation:ks-stretch-tongue 2.2s ease-in-out both}
+.act-stretch .ks-chime{animation:ks-stretch-chime 2.2s ease-in-out both}
+@keyframes ks-stretch-body{0%,100%{transform:scale(1,1)}16%{transform:scale(1.08,.92)}40%,62%{transform:scale(.95,1.12)}82%{transform:scale(1.03,.97)}}
+@keyframes ks-stretch-canopy{0%,100%{transform:scale(1,1)}16%{transform:scale(.96,.98)}42%,62%{transform:scale(1.18,.97)}82%{transform:scale(.98,1.01)}}
+@keyframes ks-stretch-armL{0%,100%{transform:rotate(0)}44%,60%{transform:rotate(115deg)}}
+@keyframes ks-stretch-armR{0%,100%{transform:rotate(0)}44%,60%{transform:rotate(-115deg)}}
+@keyframes ks-stretch-eye{0%,26%,100%{opacity:1}36%,66%{opacity:0}}
+@keyframes ks-stretch-shut{0%,26%,100%{opacity:0}36%,66%{opacity:1}}
+@keyframes ks-stretch-tongue{0%,100%{transform:scale(1,1) rotate(0)}22%{transform:scale(1,.9) rotate(0)}48%,66%{transform:scale(1,1.2) rotate(3deg)}86%{transform:scale(1,.96) rotate(-2deg)}}
+@keyframes ks-stretch-chime{0%,100%{transform:rotate(0)}30%{transform:rotate(10deg)}52%{transform:rotate(-8deg)}74%{transform:rotate(4deg)}}
+/* yawn: the mouth opens wide, the eye shuts into a droopy sleepy arc, the tongue curls up, the canopy rolls back then sags */
+.act-yawn .ks-mouth{animation:ks-yawn-mouth 2.4s ease-in-out both}
+.act-yawn .ks-open,.act-yawn .pk-look{animation:ks-yawn-eye 2.4s ease-in-out both}
+.act-yawn .ks-doze{animation:ks-yawn-shut 2.4s ease-in-out both}
+.act-yawn .ks-tongue{animation:ks-yawn-tongue 2.4s ease-in-out both}
+.act-yawn .ks-canopy{animation:ks-yawn-canopy 2.4s ease-in-out both}
+.act-yawn .ks-hop{animation:ks-yawn-body 2.4s ease-in-out both}
+@keyframes ks-yawn-mouth{0%,100%{opacity:0;transform:scale(1,.3)}14%{opacity:1;transform:scale(1,.6)}36%,62%{opacity:1;transform:scale(1.3,1.6)}80%{opacity:1;transform:scale(1,.5)}90%{opacity:0;transform:scale(1,.3)}}
+@keyframes ks-yawn-eye{0%,24%,100%{opacity:1}36%,66%{opacity:0}}
+@keyframes ks-yawn-shut{0%,24%,100%{opacity:0}36%,66%{opacity:1}}
+@keyframes ks-yawn-tongue{0%,100%{transform:rotate(0) scale(1,1)}18%{transform:rotate(4deg) scale(1,1.05)}40%,62%{transform:rotate(-48deg) scale(1,.72)}84%{transform:rotate(3deg) scale(1,1.03)}}
+@keyframes ks-yawn-canopy{0%,100%{transform:translate(0,0) rotate(0) scale(1,1)}36%,60%{transform:translate(0,-2px) rotate(4deg) scale(1.05,1.03)}84%{transform:translate(0,2px) rotate(1deg) scale(.98,.98)}}
+@keyframes ks-yawn-body{0%,100%{transform:scale(1,1)}38%,58%{transform:scale(.97,1.05)}84%{transform:scale(1.03,.97)}}
+/* shake: shakes off the rain, canopy rattling side to side, chime and strip flapping, the tongue a beat behind */
+.act-shake .ks-canopy{animation:ks-shake-canopy 1.2s ease-in-out both}
+.act-shake .ks-hop{animation:ks-shake-body 1.2s ease-in-out both}
+.act-shake .ks-tongue{animation:ks-shake-tongue 1.2s ease-in-out both}
+.act-shake .ks-chime{animation:ks-shake-chime 1.2s ease-in-out both}
+.act-shake .ks-strip{animation:ks-shake-strip 1.2s ease-in-out both}
+@keyframes ks-shake-canopy{0%,100%{transform:rotate(0) scale(1,1)}10%{transform:rotate(-9deg) scale(1.04,.98)}24%{transform:rotate(9deg) scale(1.04,.98)}38%{transform:rotate(-8deg) scale(1.03,.99)}52%{transform:rotate(7deg) scale(1.02,.99)}66%{transform:rotate(-5deg) scale(1.01,1)}80%{transform:rotate(3deg) scale(1,1)}92%{transform:rotate(-1deg) scale(1,1)}}
+@keyframes ks-shake-body{0%,100%{transform:scale(1,1)}8%{transform:scale(1.06,.94)}30%{transform:scale(.98,1.02)}60%{transform:scale(1.02,.98)}}
+@keyframes ks-shake-tongue{0%,100%{transform:rotate(0)}16%{transform:rotate(22deg)}30%{transform:rotate(-22deg)}44%{transform:rotate(18deg)}58%{transform:rotate(-14deg)}72%{transform:rotate(9deg)}86%{transform:rotate(-4deg)}}
+@keyframes ks-shake-chime{0%,100%{transform:rotate(0)}14%{transform:rotate(24deg)}28%{transform:rotate(-24deg)}42%{transform:rotate(20deg)}56%{transform:rotate(-15deg)}70%{transform:rotate(9deg)}84%{transform:rotate(-4deg)}}
+@keyframes ks-shake-strip{0%,100%{transform:rotate(0)}18%{transform:rotate(30deg)}32%{transform:rotate(-30deg)}46%{transform:rotate(26deg)}60%{transform:rotate(-20deg)}74%{transform:rotate(12deg)}88%{transform:rotate(-5deg)}}
+/* tilt: the canopy cocks to one side, curious; the eye drifts up, the chime hangs plumb and the tongue swings late */
+.act-tilt .ks-canopy{animation:ks-tilt-canopy 1.4s ease-in-out both}
+.act-tilt .ks-gaze{animation:ks-tilt-gaze 1.4s ease-in-out both}
+.act-tilt .ks-chime{animation:ks-tilt-chime 1.4s ease-in-out both}
+.act-tilt .ks-tongue{animation:ks-tilt-tongue 1.4s ease-in-out both}
+.act-tilt .ks-strip{animation:ks-tilt-strip 1.4s ease-in-out both}
+@keyframes ks-tilt-canopy{0%,100%{transform:rotate(0)}30%,66%{transform:rotate(16deg)}}
+@keyframes ks-tilt-gaze{0%,100%{transform:translate(0,0)}34%,68%{transform:translate(1.6px,-1.4px)}}
+@keyframes ks-tilt-chime{0%,100%{transform:rotate(0)}36%,66%{transform:rotate(-11deg)}84%{transform:rotate(4deg)}}
+@keyframes ks-tilt-tongue{0%,100%{transform:rotate(0)}38%,66%{transform:rotate(-10deg)}86%{transform:rotate(3deg)}}
+@keyframes ks-tilt-strip{0%,100%{transform:rotate(0)}40%,64%{transform:rotate(-8deg)}86%{transform:rotate(5deg)}}
+/* skip: a quick whoosh: the canopy spins a full turn on its handle while he hops */
+.act-skip .ks-canopy{animation:ks-skip-canopy 1s ease-in-out both}
+.act-skip .ks-hop{animation:ks-skip-body 1s ease-in-out both}
+.act-skip .ks-strip{animation:ks-skip-strip 1s ease-in-out both}
+.act-skip .ks-chime{animation:ks-skip-chime 1s ease-in-out both}
+.act-skip .ks-tongue{animation:ks-skip-tongue 1s ease-in-out both}
+@keyframes ks-skip-canopy{0%,100%{transform:rotate(0) scale(1,1)}12%{transform:rotate(-4deg) scale(1.06,.97)}30%{transform:rotate(3deg) scale(.08,1.04)}50%{transform:rotate(0) scale(-1,1.02)}70%{transform:rotate(-3deg) scale(.08,1.04)}86%{transform:rotate(2deg) scale(1.06,.98)}}
+@keyframes ks-skip-body{0%,100%{transform:translate(0,0) scale(1,1)}12%{transform:translate(0,0) scale(1.08,.92)}44%{transform:translate(0,-9px) scale(.94,1.06)}72%{transform:translate(0,0) scale(1.07,.93)}88%{transform:translate(0,0) scale(.98,1.02)}}
+@keyframes ks-skip-strip{0%,100%{transform:rotate(0)}30%{transform:rotate(28deg)}60%{transform:rotate(-26deg)}84%{transform:rotate(10deg)}}
+@keyframes ks-skip-chime{0%,100%{transform:rotate(0)}26%{transform:rotate(22deg)}56%{transform:rotate(-20deg)}82%{transform:rotate(8deg)}}
+@keyframes ks-skip-tongue{0%,100%{transform:rotate(0) scale(1,1)}36%{transform:rotate(18deg) scale(1,.9)}64%{transform:rotate(-16deg) scale(1,1.08)}88%{transform:rotate(5deg) scale(1,1)}}
+/* pause: a little "oh!": he stiffens, the pupil pins, the tongue pulls in and the chime swings on alone */
+.act-pause .ks-hop{animation:ks-pause-body 1s ease-in-out both}
+.act-pause .ks-gaze{animation:ks-pause-gaze 1s ease-in-out both}
+.act-pause .ks-tongue{animation:ks-pause-tongue 1s ease-in-out both}
+.act-pause .ks-chime{animation:ks-pause-chime 1s ease-in-out both}
+.act-pause .ks-strip{animation:ks-pause-strip 1s ease-in-out both}
+@keyframes ks-pause-body{0%,100%{transform:scale(1,1)}10%{transform:scale(1.06,.94)}24%,70%{transform:scale(.98,1.04)}}
+@keyframes ks-pause-gaze{0%,100%{transform:translate(0,0) scale(1)}20%,72%{transform:translate(0,-1px) scale(.7)}}
+@keyframes ks-pause-tongue{0%,100%{transform:scale(1,1)}18%,70%{transform:scale(1,.72)}}
+@keyframes ks-pause-chime{0%,100%{transform:rotate(0)}18%{transform:rotate(-20deg)}42%{transform:rotate(16deg)}66%{transform:rotate(-9deg)}86%{transform:rotate(3deg)}}
+@keyframes ks-pause-strip{0%,100%{transform:rotate(0)}24%{transform:rotate(-22deg)}48%{transform:rotate(20deg)}72%{transform:rotate(-10deg)}90%{transform:rotate(3deg)}}
+/* talk: a bob on each word, the mouth opening and closing over the lip, the tongue bouncing after it */
+.act-talk .ks-hop{animation:ks-talk-body 1.4s ease-in-out both}
+.act-talk .ks-mouth{animation:ks-talk-mouth 1.4s ease-in-out both}
+.act-talk .ks-canopy{animation:ks-talk-canopy 1.4s ease-in-out both}
+.act-talk .ks-tongue{animation:ks-talk-tongue 1.4s ease-in-out both}
+@keyframes ks-talk-body{0%,100%{transform:translate(0,0) scale(1,1)}14%{transform:translate(0,-3px) scale(.98,1.03)}28%{transform:translate(0,0) scale(1.03,.97)}42%{transform:translate(0,-3px) scale(.98,1.03)}56%{transform:translate(0,0) scale(1.03,.97)}70%{transform:translate(0,-2px) scale(.99,1.02)}84%{transform:translate(0,0) scale(1.02,.98)}}
+@keyframes ks-talk-mouth{0%,100%{opacity:0;transform:scale(1,.3)}8%{opacity:1;transform:scale(1,.5)}18%{opacity:1;transform:scale(1,1.1)}30%{opacity:1;transform:scale(1.1,.45)}42%{opacity:1;transform:scale(1,1.15)}54%{opacity:1;transform:scale(1.1,.5)}66%{opacity:1;transform:scale(.95,1)}78%{opacity:1;transform:scale(1.1,.4)}88%{opacity:1;transform:scale(1,.75)}94%{opacity:0;transform:scale(1,.3)}}
+@keyframes ks-talk-canopy{0%,100%{transform:rotate(0)}20%{transform:rotate(3deg)}48%{transform:rotate(-2deg)}76%{transform:rotate(2deg)}}
+@keyframes ks-talk-tongue{0%,100%{transform:rotate(0) scale(1,1)}20%{transform:rotate(-6deg) scale(1,1.1)}34%{transform:rotate(4deg) scale(1,.94)}48%{transform:rotate(-6deg) scale(1,1.1)}62%{transform:rotate(4deg) scale(1,.94)}76%{transform:rotate(-4deg) scale(1,1.06)}90%{transform:rotate(2deg) scale(1,.98)}}
+/* nod: two quick dips of the canopy, the tongue and chime bobbing after each */
+.act-nod .ks-canopy{animation:ks-nod-canopy 1s ease-in-out both}
+.act-nod .ks-tongue{animation:ks-nod-tongue 1s ease-in-out both}
+.act-nod .ks-chime{animation:ks-nod-chime 1s ease-in-out both}
+.act-nod .ks-hop{animation:ks-nod-body 1s ease-in-out both}
+@keyframes ks-nod-canopy{0%,100%{transform:translate(0,0) rotate(0) scale(1,1)}22%{transform:translate(0,3px) rotate(-3deg) scale(1.06,.88)}44%{transform:translate(0,-1px) rotate(1deg) scale(.99,1.03)}66%{transform:translate(0,3px) rotate(-3deg) scale(1.06,.88)}88%{transform:translate(0,-1px) rotate(1deg) scale(.99,1.02)}}
+@keyframes ks-nod-tongue{0%,100%{transform:scale(1,1) rotate(0)}30%{transform:scale(1,1.15) rotate(4deg)}50%{transform:scale(1,.95) rotate(-2deg)}74%{transform:scale(1,1.15) rotate(4deg)}92%{transform:scale(1,.97) rotate(-1deg)}}
+@keyframes ks-nod-chime{0%,100%{transform:rotate(0)}30%{transform:rotate(12deg)}52%{transform:rotate(-8deg)}74%{transform:rotate(10deg)}92%{transform:rotate(-3deg)}}
+@keyframes ks-nod-body{0%,100%{transform:scale(1,1)}20%{transform:scale(1.03,.97)}44%{transform:scale(1,1)}64%{transform:scale(1.03,.97)}}
+/* startle: woken: a squash, then he pops clean off the rock, arms flung, pupil pinned, tongue and chime flying late */
+.act-startle .ks-hop{animation:ks-startle-body .9s cubic-bezier(.4,0,.5,1) both}
+.act-startle .ks-gaze{animation:ks-startle-gaze .9s ease-in-out both}
+.act-startle .ks-armL{animation:ks-startle-armL .9s ease-in-out both}
+.act-startle .ks-armR{animation:ks-startle-armR .9s ease-in-out both}
+.act-startle .ks-tongue{animation:ks-startle-tongue .9s ease-in-out both}
+.act-startle .ks-chime{animation:ks-startle-chime .9s ease-in-out both}
+.act-startle .ks-strip{animation:ks-startle-strip .9s ease-in-out both}
+@keyframes ks-startle-body{0%,100%{transform:translate(0,0) scale(1,1)}12%{transform:translate(0,0) scale(1.14,.84)}40%{transform:translate(0,-20px) scale(.9,1.12)}66%{transform:translate(0,0) scale(1.1,.9)}82%{transform:translate(0,0) scale(.97,1.03)}}
+@keyframes ks-startle-gaze{0%,100%{transform:scale(1)}26%,74%{transform:scale(.62)}}
+@keyframes ks-startle-armL{0%,100%{transform:rotate(0)}36%,56%{transform:rotate(120deg)}}
+@keyframes ks-startle-armR{0%,100%{transform:rotate(0)}36%,56%{transform:rotate(-120deg)}}
+@keyframes ks-startle-tongue{0%,100%{transform:rotate(0) scale(1,1)}20%{transform:rotate(0) scale(1,1.12)}50%{transform:rotate(-30deg) scale(1,.84)}76%{transform:rotate(10deg) scale(1,1.08)}}
+@keyframes ks-startle-chime{0%,100%{transform:rotate(0)}30%{transform:rotate(16deg)}54%{transform:rotate(-26deg)}76%{transform:rotate(14deg)}92%{transform:rotate(-4deg)}}
+@keyframes ks-startle-strip{0%,100%{transform:rotate(0)}34%{transform:rotate(22deg)}58%{transform:rotate(-30deg)}80%{transform:rotate(16deg)}94%{transform:rotate(-4deg)}}
+/* special, his signature: the canopy furls shut like a put-away umbrella, shivers, then pops open with a flourish, arms flung, strip flaring */
+.act-special .ks-canopy{animation:ks-special-canopy 2.8s ease-in-out both}
+.act-special .ks-hop{animation:ks-special-body 2.8s ease-in-out both}
+.act-special .ks-armL{animation:ks-special-armL 2.8s ease-in-out both}
+.act-special .ks-armR{animation:ks-special-armR 2.8s ease-in-out both}
+.act-special .ks-chime{animation:ks-special-chime 2.8s ease-in-out both}
+.act-special .ks-strip{animation:ks-special-strip 2.8s ease-in-out both}
+.act-special .ks-tongue{animation:ks-special-tongue 2.8s ease-in-out both}
+@keyframes ks-special-canopy{0%,100%{transform:translate(0,0) rotate(0) scale(1,1)}12%{transform:translate(0,-1px) rotate(-2deg) scale(1.06,1.01)}30%{transform:translate(0,1px) rotate(2deg) scale(.16,1.1)}40%{transform:translate(0,1px) rotate(-3deg) scale(.16,1.1)}50%{transform:translate(0,1px) rotate(3deg) scale(.16,1.1)}58%{transform:translate(0,2px) rotate(0) scale(.12,1.06)}68%{transform:translate(0,-3px) rotate(-2deg) scale(1.3,.9)}78%{transform:translate(0,0) rotate(2deg) scale(.94,1.05)}88%{transform:translate(0,0) rotate(-1deg) scale(1.03,.98)}}
+@keyframes ks-special-body{0%,28%,100%{transform:translate(0,0) scale(1,1)}36%{transform:translate(0,0) scale(1.02,.98)}44%{transform:translate(0,0) scale(.98,1.02)}52%{transform:translate(0,0) scale(1.02,.98)}60%{transform:translate(0,0) scale(1.1,.88)}70%{transform:translate(0,-12px) scale(.94,1.08)}82%{transform:translate(0,0) scale(1.08,.92)}92%{transform:translate(0,0) scale(.98,1.02)}}
+@keyframes ks-special-armL{0%,100%{transform:rotate(0)}30%,58%{transform:rotate(-30deg)}70%{transform:rotate(130deg)}80%{transform:rotate(95deg)}90%{transform:rotate(20deg)}}
+@keyframes ks-special-armR{0%,100%{transform:rotate(0)}30%,58%{transform:rotate(30deg)}70%{transform:rotate(-130deg)}80%{transform:rotate(-95deg)}90%{transform:rotate(-20deg)}}
+@keyframes ks-special-chime{0%,100%{transform:rotate(0)}20%,58%{transform:rotate(-8deg)}72%{transform:rotate(-30deg)}84%{transform:rotate(18deg)}94%{transform:rotate(-6deg)}}
+@keyframes ks-special-strip{0%,56%,100%{transform:rotate(0)}74%{transform:rotate(34deg)}86%{transform:rotate(-24deg)}95%{transform:rotate(8deg)}}
+@keyframes ks-special-tongue{0%,100%{transform:rotate(0) scale(1,1)}24%,58%{transform:rotate(0) scale(1,.7)}72%{transform:rotate(-20deg) scale(1,1.15)}84%{transform:rotate(12deg) scale(1,1)}94%{transform:rotate(-4deg) scale(1,1)}}
+/* bow: a polite dip: the canopy bends forward and down, arms tucked, the chime swinging out and the tongue following */
+.act-bow .ks-canopy{animation:ks-bow-canopy 1.4s ease-in-out both}
+.act-bow .ks-hop{animation:ks-bow-body 1.4s ease-in-out both}
+.act-bow .ks-armL{animation:ks-bow-armL 1.4s ease-in-out both}
+.act-bow .ks-armR{animation:ks-bow-armR 1.4s ease-in-out both}
+.act-bow .ks-chime{animation:ks-bow-chime 1.4s ease-in-out both}
+.act-bow .ks-tongue{animation:ks-bow-tongue 1.4s ease-in-out both}
+.act-bow .ks-strip{animation:ks-bow-strip 1.4s ease-in-out both}
+@keyframes ks-bow-canopy{0%,100%{transform:translate(0,0) rotate(0) scale(1,1)}12%{transform:translate(0,-1px) rotate(1deg) scale(.99,1.02)}36%,62%{transform:translate(0,6px) rotate(-4deg) scale(1.08,.8)}86%{transform:translate(0,-1px) rotate(1deg) scale(.99,1.02)}}
+@keyframes ks-bow-body{0%,100%{transform:scale(1,1)}40%,60%{transform:scale(1.03,.95)}}
+@keyframes ks-bow-armL{0%,100%{transform:rotate(0)}38%,62%{transform:rotate(-28deg)}}
+@keyframes ks-bow-armR{0%,100%{transform:rotate(0)}38%,62%{transform:rotate(28deg)}}
+@keyframes ks-bow-chime{0%,100%{transform:rotate(0)}40%,58%{transform:rotate(14deg)}80%{transform:rotate(-7deg)}}
+@keyframes ks-bow-tongue{0%,100%{transform:rotate(0) scale(1,1)}44%,64%{transform:rotate(5deg) scale(1,1.2)}86%{transform:rotate(-2deg) scale(1,.97)}}
+@keyframes ks-bow-strip{0%,100%{transform:rotate(0)}46%,60%{transform:rotate(12deg)}82%{transform:rotate(-7deg)}}`});
 })();

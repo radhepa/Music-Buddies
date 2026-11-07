@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "test": "node test/library.test.js"
+    "test": "node test/library.test.js && node test/chat.test.js"
   },
   "devDependencies": {
     "electron": "40.9.3"

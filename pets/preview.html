@@ -26,7 +26,12 @@ body{margin:0;padding:16px;font:600 13px/1.2 'Segoe UI',sans-serif;color:#1f2e2c
   const tile=(id,state,cls='')=>`<div class="tile"><div class="box ${cls} ${state}">${PetKit.svg(id)}</div>${state||'idle'}</div>`;
   document.getElementById('out').innerHTML=ids.map(id=>{ const d=PetKit.get(id); return `<div class="pet"><h2>${d.name} · ${d.kind}</h2><div class="row">
     ${tile(id,'')}${tile(id,'playing')}${tile(id,'fidget')}${tile(id,'sleepy')}
-    ${tile(id,'playing','dark sm')}${tile(id,'','dark xs')}${tile(id,'playing','xs')}</div></div>`; }).join('');
+    ${tile(id,'playing','dark sm')}${tile(id,'','dark xs')}${tile(id,'playing','xs')}</div>
+    <div class="row" style="margin-top:8px">${PetKit.DANCES.map(c=>tile(id,'playing '+c)).join('')}</div>
+    <div class="row" style="margin-top:8px">${Object.keys(PetKit.ACTS).map(n=>tile(id,'act-'+n,'act')).join('')}</div></div>`; }).join('');
+  /* ?acts=1 replays every act tile on a loop; ?act=NAME&t=0.5 freezes one act at that second */
+  if(q.get('acts')) for(const b of document.querySelectorAll('.box.act')){ const c=[...b.classList].find(x=>x.startsWith('act-')), ms=PetKit.ACTS[c.slice(4)];
+    setInterval(()=>{ b.classList.remove(c); void b.offsetWidth; b.classList.add(c); },ms+700); }
   const t=parseFloat(q.get('t'));
   if(isFinite(t)) requestAnimationFrame(()=>document.getAnimations().forEach(a=>{ a.pause(); a.currentTime=t*1000; }));
 })();

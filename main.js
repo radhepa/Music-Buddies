@@ -243,7 +243,7 @@ let PETS=[{id:'sara',name:'Sara',kind:'kappa'}], sentPet=null;
 const activePet=()=>state.pet||S.pet||'sara';
 function syncPet(){
   const id=activePet(); send(playerWin,'pet',{id,everyday:S.pet});   // the window also shows the everyday pick
-  if(id===sentPet) return; sentPet=id; send(petWin,'pet',{id});
+  if(id===sentPet) return; sentPet=id; send(petWin,'pet',{id}); send(miniWin,'pet',{id});
 }
 
 /* ════════════════════ the Music Buddies window: songs, playlists, YouTube, which buddy ════════════════════
@@ -270,10 +270,11 @@ function openPlayer(){ if(playerWin.isMinimized()) playerWin.restore(); playerWi
 function closePlayer(){ if(playerWin) playerWin.hide(); }
 const togglePlayer=()=>playerOpen()?closePlayer():openPlayer();
 
-/* ════════════════════ the banner: a small now-playing strip by the pet ════════════════════
-   Tapping the pet (or Ctrl+]) brings this up, not the whole app: the song, play/pause/skip, and a door to
-   the window. It goes away as soon as you click anywhere else. */
-const MW=360, MH=84;
+/* ════════════════════ the banner: a small panel by the pet ════════════════════
+   Tapping the pet (or Ctrl+]) brings this up, not the whole app: what's on and its controls, a chat with the
+   buddy (who can play things for you), and your playlists with a search. A button opens the whole window.
+   It goes away as soon as you click anywhere else. */
+const MW=392, MH=584;
 function petRect(){
   const g=geo(), b=petWin.getBounds(), s=g.S;
   if(peek.edge==='r'&&peek.p>.5) return {x:b.x+g.W-s*.6,y:b.y+g.H/2-s*.45,w:s*.6,h:s*.8};
@@ -292,13 +293,15 @@ let miniShut=0;   // when it last went away: the tap on the pet that blurred it 
 const miniOpen=()=>!!miniWin&&miniWin.isVisible();
 function openMini(){
   if(!miniWin||!petWin) return;
-  /* above the pet, leaning to whichever side has room; below it when it's hiding at the top */
-  const r=petRect(), wa=workAreaAt(r.x+r.w/2,r.y+r.h/2);
-  const x=Math.round(Math.min(Math.max(r.x+r.w/2-MW/2,wa.x),wa.x+wa.width-MW));
-  let y=r.y-MH+8; if(y<wa.y) y=r.y+r.h-8;
-  miniWin.setBounds({x,y:Math.round(Math.min(Math.max(y,wa.y),wa.y+wa.height-MH)),width:MW,height:MH});
-  send(miniWin,'state',state);
+  /* beside the pet, on whichever side has room, its foot level with the pet's feet */
+  const r=petRect(), wa=workAreaAt(r.x+r.w/2,r.y+r.h/2), h=Math.min(MH,wa.height);
+  let x=r.x-MW+6; if(x<wa.x) x=r.x+r.w-6;
+  x=Math.round(Math.min(Math.max(x,wa.x),wa.x+wa.width-MW));
+  const y=Math.round(Math.min(Math.max(r.y+r.h-h+10,wa.y),wa.y+wa.height-h));
+  miniWin.setBounds({x,y,width:MW,height:h});
+  send(miniWin,'state',state); send(miniWin,'open',{});
   miniWin.show(); miniWin.focus(); miniWin.setAlwaysOnTop(true,'pop-up-menu');
+  send(petWin,'act','wave');
 }
 function closeMini(){ if(miniOpen()){ miniWin.hide(); miniShut=Date.now(); } }
 function toggleMini(){ if(miniOpen()) closeMini(); else if(Date.now()-miniShut>350) openMini(); }
@@ -349,7 +352,7 @@ ipcMain.handle('menu',(e,items)=>new Promise(resolve=>{
 ipcMain.on('save',(e,o)=>{
   if(!o||typeof o!=='object') return;
   ['volume','shuffle','repeat','view'].forEach(k=>{ if(k in o) S[k]=o[k]; });
-  if(o.library&&Array.isArray(o.library.tracks)) S.library=o.library;
+  if(o.library&&Array.isArray(o.library.tracks)){ S.library=o.library; send(miniWin,'library',S.library); }
   save();
 });
 ipcMain.on('state',(e,o)=>{ state=Object.assign(state,o||{}); if(typeof state.pet!=='string') state.pet=''; send(petWin,'state',state); send(miniWin,'state',state); syncPet(); });
@@ -366,8 +369,14 @@ ipcMain.on('drop-paths',(e,paths)=>{ const tracks=scan(paths); if(tracks.length)
 ipcMain.on('drag-start',(e,press)=>{ closeMini(); dragStart(press); });
 ipcMain.on('drag-end',()=>dragEnd());
 ipcMain.on('tap',()=>toggleMini());
-ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev'].includes(c)) send(playerWin,'cmd',c); });
+ipcMain.on('mini-cmd',(e,c)=>{ if(['toggle','next','prev','shuffle','vol-up','vol-down','repeat-one','repeat-off','keep'].includes(c)) send(playerWin,'cmd',c); });
 ipcMain.on('mini-close',()=>closeMini());
+ipcMain.handle('mini-init',()=>({pet:activePet(),state,library:S.library||{tracks:[],playlists:[]}}));
+ipcMain.on('mini-play',(e,o)=>{ if(o&&typeof o.id==='string') send(playerWin,'play-track',{id:o.id,from:String(o.from||'all')}); });
+ipcMain.on('mini-yt',(e,r)=>{ if(r&&typeof r.yt==='string') send(playerWin,'play-yt',r); });
+ipcMain.on('mini-seek',(e,f)=>{ if(typeof f==='number') send(playerWin,'seek',f); });
+ipcMain.on('mini-act',(e,n)=>{ if(typeof n==='string') send(petWin,'act',n); });
+ipcMain.on('prog',(e,p)=>{ if(miniOpen()) send(miniWin,'prog',p); });
 ipcMain.on('open-app',()=>{ closeMini(); openPlayer(); });
 ipcMain.on('pet-menu',()=>petMenu().popup({window:petWin}));
 ipcMain.on('player-close',()=>closePlayer());
@@ -378,10 +387,12 @@ ipcMain.on('show-file',(e,p)=>{ if(typeof p==='string'&&fs.existsSync(p)) shell.
 
 let quitting=false;
 app.on('before-quit',()=>{ quitting=true; save(true); });
-app.on('second-instance',()=>{ if(playerWin) wake(); });   // Ctrl+] held by the toad starts us again: same as pressing it here
+/* started again: from the Music Buddies shortcut (--open) bring up the window; from Ctrl+] in the toad, the banner */
+app.on('second-instance',(e,argv)=>{ if(!playerWin) return; if(argv.includes('--open')) openPlayer(); else wake(); });
 app.whenReady().then(()=>{
   load();
   createPet(); createPlayer(); createMini(); watchFolder();
+  if(process.argv.includes('--open')) playerWin.once('ready-to-show',openPlayer);
   screen.on('display-metrics-changed',()=>{ if(petWin) place(virt.x,virt.y,false); });
   /* the keyboard's media keys work even when Sara isn't in front */
   const key=(k,c)=>{ try{ globalShortcut.register(k,()=>send(playerWin,'cmd',c)); }catch(e){} };

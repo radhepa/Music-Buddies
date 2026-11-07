@@ -119,7 +119,7 @@ function sara(ID){
     <clipPath id="${ID}sc"><path d="${K_SHELL}"/></clipPath>
   </defs>
   ${pad(ID)}
-  <g class="pk-body"><g class="mp-breathe"><g class="kp-bob">
+  <g class="pk-body"><g class="mp-breathe"><g class="kp-bob"><g class="kp-act">
     <!-- her shell, a warm dome behind her, rimmed with scutes -->
     <path d="${K_SHELL}" fill="url(#${ID}shell)" stroke="#4a3424" stroke-width=".6"/>
     <g clip-path="url(#${ID}sc)">
@@ -142,14 +142,17 @@ function sara(ID){
       <ellipse cx="0" cy="-2.2" rx="28" ry="3.4" fill="#173a3b" opacity=".14"/>
       ${[[-27.4,-16,1.1],[-30.4,-9.4,.9],[-24.6,-8,.75],[26.4,-9,.8]].map(kSpot).join('')}
     </g>
-    <!-- the planted arm (viewer's right) and its webbed hand -->
+    <!-- the planted arm (viewer's right) and its webbed hand; it lifts from the shoulder to wave, stretch and steady the dish -->
+    <g transform="translate(30 -34)"><g class="kp-hand"><g transform="translate(-30 34)">
     <path d="${K_ARM_R}" fill="url(#${ID}skin)"/>
     <path d="M27 -36 C36 -35 43 -28 44 -19 C44.6 -12 43 -6 41.6 -2.6 M33.4 -2.6 C34 -8 33 -14 30.4 -19 C29.4 -20.7 28.5 -22.5 27.8 -24.2" fill="none" stroke="#3f7f62" stroke-width=".55" stroke-linecap="round"/>
     ${[[40.4,-22,.95],[42.6,-12.6,.8],[37.6,-9.6,.7]].map(kSpot).join('')}
     <path d="M37.5 -4.6 L27.8 .3 Q32.6 3.5 37.5 2.3 Q42.4 3.5 47.2 .3Z" fill="#c5e8cc" stroke="#3f7f62" stroke-width=".5" stroke-linejoin="round"/>
     <path d="M37.5 -3 L29.4 .4 M37.5 -3 L37.5 1.8 M37.5 -3 L45.6 .4" fill="none" stroke="#9fd6b3" stroke-width="2.2" stroke-linecap="round"/>
     <g fill="#e0f3df" stroke="#3f7f62" stroke-width=".4"><circle cx="28.6" cy=".6" r="1.8"/><circle cx="37.5" cy="2.3" r="1.8"/><circle cx="46.4" cy=".6" r="1.8"/></g>
-    <!-- the other arm reaches out, and its fist holds a cucumber with a bite gone -->
+    </g></g></g>
+    <!-- the other arm reaches out, and its fist holds a cucumber with a bite gone; it too swings from the shoulder -->
+    <g transform="translate(-27 -33)"><g class="kp-larm"><g transform="translate(27 33)">
     <path d="${K_ARM_L}" fill="url(#${ID}skin)"/>
     <path d="M-26 -36 C-34 -39.5 -45 -35 -51.5 -27 M-40 -21.6 C-37.4 -24.7 -34 -26 -30.4 -26.3" fill="none" stroke="#3f7f62" stroke-width=".55" stroke-linecap="round"/>
     ${[[-40,-31,.9],[-45.4,-27,.75]].map(kSpot).join('')}
@@ -164,8 +167,9 @@ function sara(ID){
     <path d="M-55 -23 C-55.6 -18.4 -52.6 -15.2 -48.6 -15.4 C-44.6 -15.4 -42.2 -18.6 -42.8 -22.4 C-43.4 -26.2 -46.6 -27.8 -49.6 -27.4 C-52.6 -27.2 -54.6 -25.6 -55 -23Z" fill="#c5e8cc" stroke="#3f7f62" stroke-width=".55"/>
     <path d="M-54.4 -22.8 C-50.8 -23.9 -47 -23.7 -43.4 -22.2 M-54.8 -19.6 C-51 -20.6 -47 -20.4 -43.8 -19" fill="none" stroke="#3f7f62" stroke-width=".5" stroke-linecap="round" opacity=".75"/>
     <ellipse cx="-50.4" cy="-25.2" rx="3" ry="1" fill="#ffffff" opacity=".5"/>
-    <!-- the head: it rocks with the music, dish and all -->
-    <g transform="translate(0 -33)"><g class="kp-rock"><g transform="translate(0 33)">
+    </g></g></g>
+    <!-- the head: it rocks with the music, dish and all (.kp-rock is the music's, .kp-head the acts') -->
+    <g transform="translate(0 -33)"><g class="kp-rock"><g class="kp-head"><g transform="translate(0 33)">
       <path d="${K_HEAD}" fill="url(#${ID}skin)" stroke="#3f7f62" stroke-width=".6"/>
       <g clip-path="url(#${ID}hc)">
         <rect x="-40" y="-83" width="80" height="53" fill="url(#${ID}edge)"/>
@@ -183,6 +187,11 @@ function sara(ID){
       <path d="M-12.5 -43.4 C-13.6 -44.2 -14.5 -45.5 -14.4 -46.9 M12.5 -43.4 C13.6 -44.2 14.5 -45.5 14.4 -46.9" fill="none" stroke="#8a5a22" stroke-width=".9" stroke-linecap="round"/>
       <ellipse cx="-3" cy="-48.4" rx="1" ry=".6" fill="#8a5a22" opacity=".75"/><ellipse cx="3" cy="-48.4" rx="1" ry=".6" fill="#8a5a22" opacity=".75"/>
       <ellipse cx="-4.8" cy="-50" rx="4.2" ry="1.2" fill="#ffffff" opacity=".5" transform="rotate(-9 -4.8 -50)"/>
+      <!-- the open beak, shut flat until she talks, yawns or says "oh!" -->
+      <g transform="translate(0 -40)"><g class="kp-mouth">
+        <path d="M-6.6 -1.6 C-4 -2.6 4 -2.6 6.6 -1.6 C5.8 3.8 -5.8 3.8 -6.6 -1.6Z" fill="#5a2a16" stroke="#8a5a22" stroke-width=".5" stroke-linejoin="round"/>
+        <ellipse cx="0" cy="1.6" rx="3.4" ry="1.4" fill="#f48a78"/>
+      </g></g>
       <!-- the wet fringe that rings the dish -->
       <ellipse cx="0" cy="-79" rx="30" ry="8.5" fill="#123f3c"/>
       <path d="${back.locks}" fill="#123f3c"/>
@@ -202,7 +211,7 @@ function sara(ID){
       <g transform="translate(0 -89.3)"><g class="kp-ripple"><ellipse rx="25" ry="7.95" fill="none" stroke="#ffffff" stroke-width=".5" opacity=".6"/></g></g>
       <!-- the record afloat in it -->
       <ellipse cx="0" cy="-88.5" rx="22.6" ry="7.25" fill="#0b1211"/>
-      <g transform="translate(0 -89.4) scale(1 .32)">${kRecord(ID,22.6)}</g>
+      <g transform="translate(0 -89.4)"><g class="kp-rec"><g transform="scale(1 .32)"><g class="kp-disc">${kRecord(ID,22.6)}</g></g></g></g>
       <path d="M-23.4 -93 C-18 -96.4 -9.4 -97.6 -1 -97.7" fill="none" stroke="#ffffff" stroke-width=".8" stroke-linecap="round" opacity=".75"/>
       <!-- the tonearm: a twig of bamboo, a lotus seed for its weight, a leaf for its head -->
       <g transform="translate(24.6 -95.5)"><g class="kp-arm">
@@ -216,8 +225,8 @@ function sara(ID){
       <circle cx="24.6" cy="-95.5" r="2.2" fill="#d9bd7c" stroke="#7a5a2a" stroke-width=".5"/><circle cx="24" cy="-96.1" r=".7" fill="#fff8e9" opacity=".8"/>
       <!-- drops jump the rim when the music's on -->
       <g class="kp-drops"><g transform="translate(29 -92)"><g class="kp-drop">${drop}</g></g><g transform="translate(-29 -92) scale(-1 1)"><g class="kp-drop d2">${drop}</g></g></g>
-    </g></g></g>
-  </g></g></g>
+    </g></g></g></g>
+  </g></g></g></g>
   ${notes(47,-99,'#ec7a45')}
   ${zz(40,-70)}`;
 }
@@ -252,5 +261,148 @@ PetKit.register({id:'sara',name:'Sara',kind:'kappa',blurb:'Floats a record in th
 .sleepy .kp-open{opacity:0}
 .sleepy .kp-closed{opacity:1}
 .sleepy .kp-rock{transform:rotate(3deg) translateY(1.2px);transition:transform 1.2s ease-in-out}
-.sleepy .kp-arm{transform:rotate(-38deg)}`});
+.sleepy .kp-arm{transform:rotate(-38deg)}
+/* three dances, one a song, each replacing the plain .playing bob, rock and baton */
+.playing.dance-1 .kp-bob{animation:kp-d1-bob .86s ease-in-out infinite}
+.playing.dance-1 .kp-rock{animation:kp-d1-head .86s ease-in-out infinite}
+.playing.dance-1 .kp-baton{animation:kp-d1-baton .86s ease-in-out infinite}
+@keyframes kp-d1-bob{0%,100%{transform:none}50%{transform:translateY(1.8px) scale(1.03,.965)}}
+@keyframes kp-d1-head{0%,100%{transform:translateY(0) rotate(-1.5deg)}35%{transform:translateY(3px) scale(1.02,.95) rotate(1.5deg)}70%{transform:translateY(-.8px) rotate(0)}}
+@keyframes kp-d1-baton{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(12deg)}}
+.playing.dance-2 .kp-bob{animation:kp-d2-bob 1.72s ease-in-out infinite}
+.playing.dance-2 .kp-rock{animation:kp-d2-head 1.72s ease-in-out infinite}
+.playing.dance-2 .kp-baton{animation:kp-d2-baton 1.72s ease-in-out infinite}
+.playing.dance-2 .kp-hand{animation:kp-d2-hand 1.72s ease-in-out infinite}
+.playing.dance-2 .kp-larm{animation:kp-d2-larm 1.72s ease-in-out infinite}
+@keyframes kp-d2-bob{0%,100%{transform:translateX(-3px) rotate(-3.5deg)}50%{transform:translateX(3px) rotate(3.5deg)}}
+@keyframes kp-d2-head{0%,100%{transform:rotate(4deg)}50%{transform:rotate(-4deg)}}
+@keyframes kp-d2-baton{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(18deg)}}
+@keyframes kp-d2-hand{0%,100%{transform:rotate(-24deg)}50%{transform:rotate(6deg)}}
+@keyframes kp-d2-larm{0%,100%{transform:rotate(12deg)}50%{transform:rotate(-14deg)}}
+.playing.dance-3 .kp-bob{animation:kp-d3-bob .86s cubic-bezier(.4,0,.6,1) infinite}
+.playing.dance-3 .kp-rock{animation:kp-d3-head .86s ease-in-out infinite}
+.playing.dance-3 .kp-baton{animation:kp-d3-baton .86s ease-in-out infinite}
+.playing.dance-3 .mp-ring{animation-duration:1.72s}.playing.dance-3 .mp-ring.two{animation-delay:-.86s}
+@keyframes kp-d3-bob{0%,100%{transform:scale(1.06,.92)}35%{transform:translateY(-7px) scale(.96,1.06)}70%{transform:translateY(-.5px) scale(1,1)}}
+@keyframes kp-d3-head{0%,100%{transform:translateY(1.4px)}45%{transform:translateY(-1.8px)}}
+@keyframes kp-d3-baton{0%,100%{transform:rotate(14deg)}40%{transform:rotate(-18deg)}}
+/* acts: .act-<name> stays on for PetKit.ACTS[name] ms; every one starts and ends at rest.
+   .kp-act carries whole-body act motion and .kp-head the head's (the music owns .kp-bob and .kp-rock, so a song
+   never fights an act); .kp-rec tips and slides the record in the dish, .kp-disc spins it; .kp-hand and .kp-larm
+   are the arms, hung from the shoulders; .kp-mouth is the open beak, flat until needed. */
+.kp-mouth{transform:scale(1,0);opacity:0}
+@keyframes kp-a-shut{0%,100%{transform:scaleY(1)}30%,70%{transform:scaleY(3.1)}}
+@keyframes kp-a-wide{0%,100%{transform:scaleY(1)}20%,70%{transform:scaleY(.4)}}
+@keyframes kp-a-rip{0%,100%{transform:scale(1)}50%{transform:scale(1.07,1.2)}}
+.act-wave .kp-hand{animation:kp-a-wave 1.6s ease-in-out}
+.act-wave .kp-head{animation:kp-a-wave-head 1.6s ease-in-out}
+@keyframes kp-a-wave{0%,100%{transform:rotate(0)}20%{transform:rotate(-138deg)}34%{transform:rotate(-120deg)}48%{transform:rotate(-146deg)}62%{transform:rotate(-120deg)}76%{transform:rotate(-140deg)}}
+@keyframes kp-a-wave-head{0%,100%{transform:none}30%,70%{transform:rotate(4deg)}}
+.act-look .kp-gaze{animation:kp-a-look-gaze 2.4s ease-in-out}
+.act-look .kp-head{animation:kp-a-look-head 2.4s ease-in-out}
+.act-look .kp-act{animation:kp-a-look-body 2.4s ease-in-out}
+@keyframes kp-a-look-gaze{0%,100%{transform:translate(0,0)}14%,40%{transform:translate(-2.4px,.3px)}58%,84%{transform:translate(2.4px,.3px)}}
+@keyframes kp-a-look-head{0%,100%{transform:none}16%,40%{transform:rotate(-4deg) translateX(-1px)}58%,84%{transform:rotate(4deg) translateX(1px)}}
+@keyframes kp-a-look-body{0%,100%{transform:none}18%,40%{transform:rotate(-1.5deg)}58%,84%{transform:rotate(1.5deg)}}
+.act-stretch .kp-act{animation:kp-a-stretch 2.2s ease-in-out}
+.act-stretch .kp-hand{animation:kp-a-stretch-r 2.2s ease-in-out}
+.act-stretch .kp-larm{animation:kp-a-stretch-l 2.2s ease-in-out}
+.act-stretch .kp-baton{animation:kp-a-stretch-baton 2.2s ease-in-out}
+.act-stretch .kp-blink{animation:kp-a-shut 2.2s ease-in-out}
+.act-stretch .kp-head{animation:kp-a-stretch-head 2.2s ease-in-out}
+@keyframes kp-a-stretch{0%,100%{transform:none}12%{transform:scale(1.03,.96)}38%,62%{transform:scale(.96,1.08)}80%{transform:scale(1.02,.97)}}
+@keyframes kp-a-stretch-r{0%,100%{transform:rotate(0)}38%,62%{transform:rotate(-150deg)}}
+@keyframes kp-a-stretch-l{0%,100%{transform:rotate(0)}38%,62%{transform:rotate(80deg)}}
+@keyframes kp-a-stretch-baton{0%,100%{transform:rotate(0)}38%,62%{transform:rotate(-70deg)}}
+@keyframes kp-a-stretch-head{0%,100%{transform:none}38%,62%{transform:translateY(-2px) rotate(-3deg)}}
+.act-yawn .kp-mouth{animation:kp-a-yawn-mouth 2.4s ease-in-out}
+.act-yawn .kp-blink{animation:kp-a-shut 2.4s ease-in-out}
+.act-yawn .kp-head{animation:kp-a-yawn-head 2.4s ease-in-out}
+.act-yawn .kp-act{animation:kp-a-yawn-body 2.4s ease-in-out}
+.act-yawn .kp-larm{animation:kp-a-yawn-arm 2.4s ease-in-out}
+.act-yawn .kp-baton{animation:kp-a-yawn-baton 2.4s ease-in-out}
+@keyframes kp-a-yawn-mouth{0%{transform:scale(1,0);opacity:0}6%{opacity:1}30%,66%{transform:scale(1.1,1.25);opacity:1}94%{opacity:1}100%{transform:scale(1,0);opacity:0}}
+@keyframes kp-a-yawn-head{0%,100%{transform:none}30%,66%{transform:translateY(-2.2px) scale(1.03,1.04)}}
+@keyframes kp-a-yawn-body{0%,100%{transform:none}30%,66%{transform:scale(.98,1.04)}}
+@keyframes kp-a-yawn-arm{0%,100%{transform:rotate(0)}30%,66%{transform:rotate(48deg)}}
+@keyframes kp-a-yawn-baton{0%,100%{transform:rotate(0)}30%,66%{transform:rotate(-40deg)}}
+.act-shake .kp-act{animation:kp-a-shake 1.2s ease-in-out}
+.act-shake .kp-head{animation:kp-a-shake-head 1.2s ease-in-out}
+.act-shake .kp-drops{opacity:1}
+.act-shake .kp-drop{animation:kp-drop .6s ease-out 2}
+.act-shake .kp-drop.d2{animation:kp-drop .5s ease-out .1s 2}
+@keyframes kp-a-shake{0%,100%{transform:none}10%{transform:rotate(-5deg) scale(1.02,.98)}25%{transform:rotate(5deg)}40%{transform:rotate(-4deg)}55%{transform:rotate(3.5deg)}70%{transform:rotate(-2deg)}85%{transform:rotate(1deg)}}
+@keyframes kp-a-shake-head{0%,100%{transform:none}14%{transform:rotate(6deg)}29%{transform:rotate(-6deg)}44%{transform:rotate(5deg)}59%{transform:rotate(-4deg)}74%{transform:rotate(2.5deg)}88%{transform:rotate(-1deg)}}
+.act-tilt .kp-head{animation:kp-a-tilt 1.4s cubic-bezier(.4,0,.2,1)}
+.act-tilt .kp-rec{animation:kp-a-tilt-rec 1.4s cubic-bezier(.4,0,.2,1)}
+.act-tilt .kp-ripple{animation:kp-a-rip 1.4s ease-out}
+@keyframes kp-a-tilt{0%,100%{transform:none}30%,70%{transform:rotate(-10deg)}}
+@keyframes kp-a-tilt-rec{0%,100%{transform:none}38%,74%{transform:translate(-2.5px,.6px) rotate(8deg)}}
+.act-skip .kp-disc{animation:kp-a-skip-spin 1s cubic-bezier(.2,.7,.2,1)}
+.act-skip .kp-rec{animation:kp-a-skip-rec 1s ease-in-out}
+.act-skip .kp-head{animation:kp-a-skip-head 1s ease-in-out}
+.act-skip .kp-act{animation:kp-a-skip-body 1s ease-in-out}
+@keyframes kp-a-skip-spin{0%{transform:rotate(0)}100%{transform:rotate(1080deg)}}
+@keyframes kp-a-skip-rec{0%,100%{transform:none}20%{transform:scale(1.06,1.5) rotate(-4deg)}45%{transform:scale(1,1.2) rotate(5deg)}70%{transform:scale(1.02,1.08) rotate(-2deg)}}
+@keyframes kp-a-skip-head{0%,100%{transform:none}18%{transform:translateY(-1.5px) rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes kp-a-skip-body{0%,100%{transform:none}15%{transform:scale(1.04,.96)}45%{transform:scale(.98,1.03)}}
+.act-pause .kp-disc{animation:kp-a-pause-spin 1s cubic-bezier(.1,.6,.2,1)}
+.act-pause .kp-rec{animation:kp-a-pause-rec 1s ease-in-out}
+.act-pause .kp-head{animation:kp-a-pause-head 1s ease-in-out}
+.act-pause .kp-mouth{animation:kp-a-oh 1s ease-in-out}
+.act-pause .kp-blink{animation:kp-a-wide 1s ease-in-out}
+@keyframes kp-a-pause-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes kp-a-pause-rec{0%,100%{transform:none}25%{transform:scale(1,1.35) rotate(5deg)}50%{transform:scale(1,1.15) rotate(-4deg)}72%{transform:scale(1,1.05) rotate(2deg)}}
+@keyframes kp-a-pause-head{0%,100%{transform:none}22%{transform:translateY(-2px) scale(1.03,1.04)}60%{transform:translateY(-1px)}}
+@keyframes kp-a-oh{0%{transform:scale(1,0);opacity:0}10%{opacity:1}25%,70%{transform:scale(.6,.75);opacity:1}92%{opacity:1}100%{transform:scale(1,0);opacity:0}}
+.act-talk .kp-mouth{animation:kp-a-talk-mouth 1.4s ease-in-out}
+.act-talk .kp-head{animation:kp-a-talk-head 1.4s ease-in-out}
+.act-talk .kp-act{animation:kp-a-talk-body 1.4s ease-in-out}
+.act-talk .kp-baton{animation:kp-a-talk-baton 1.4s ease-in-out}
+@keyframes kp-a-talk-mouth{0%{transform:scale(1,0);opacity:0}6%{opacity:1}14%{transform:scale(1,.9)}28%{transform:scale(.9,.3)}42%{transform:scale(1.05,1)}56%{transform:scale(.9,.35)}70%{transform:scale(1,.85)}84%{transform:scale(.9,.3);opacity:1}100%{transform:scale(1,0);opacity:0}}
+@keyframes kp-a-talk-head{0%,100%{transform:none}14%{transform:translateY(-1.2px) rotate(-2deg)}42%{transform:translateY(-1.4px) rotate(2deg)}70%{transform:translateY(-1px) rotate(-1.5deg)}}
+@keyframes kp-a-talk-body{0%,100%{transform:none}14%,42%,70%{transform:scale(1.01,.985)}28%,56%{transform:scale(.99,1.015)}}
+@keyframes kp-a-talk-baton{0%,100%{transform:rotate(0)}20%{transform:rotate(-14deg)}50%{transform:rotate(10deg)}78%{transform:rotate(-8deg)}}
+.act-nod .kp-head{animation:kp-a-nod 1s ease-in-out}
+.act-nod .kp-rec{animation:kp-a-nod-rec 1s ease-in-out}
+.act-nod .kp-act{animation:kp-a-nod-body 1s ease-in-out}
+@keyframes kp-a-nod{0%,100%{transform:none}22%{transform:translateY(3px) scale(1.03,.93)}46%{transform:translateY(-.5px)}68%{transform:translateY(3px) scale(1.03,.93)}}
+@keyframes kp-a-nod-rec{0%,100%{transform:none}30%{transform:translateY(-2px) scale(1,1.1)}52%{transform:translateY(.8px)}76%{transform:translateY(-2px) scale(1,1.1)}}
+@keyframes kp-a-nod-body{0%,100%{transform:none}22%,68%{transform:scale(1.015,.98)}}
+.act-startle .kp-act{animation:kp-a-startle .9s cubic-bezier(.3,1.2,.5,1)}
+.act-startle .kp-blink{animation:kp-a-startle-eyes .9s ease-out}
+.act-startle .kp-gaze{animation:kp-a-startle-gaze .9s ease-out}
+.act-startle .kp-rec{animation:kp-a-startle-rec .9s ease-in-out}
+.act-startle .kp-larm{animation:kp-a-startle-arm .9s ease-in-out}
+@keyframes kp-a-startle{0%,100%{transform:none}14%{transform:scale(1.08,.9)}40%{transform:translateY(-9px) scale(.94,1.08)}64%{transform:translateY(0) scale(1.06,.93)}82%{transform:scale(.98,1.02)}}
+@keyframes kp-a-startle-eyes{0%,100%{transform:scaleY(1)}18%,76%{transform:scaleY(.35)}}
+@keyframes kp-a-startle-gaze{0%,100%{transform:scale(1)}18%,76%{transform:scale(.62)}}
+@keyframes kp-a-startle-rec{0%,100%{transform:none}30%{transform:translateY(2px) scale(1,.9)}52%{transform:translateY(-3.5px) scale(1,1.25)}74%{transform:translateY(.6px)}}
+@keyframes kp-a-startle-arm{0%,100%{transform:rotate(0)}30%,60%{transform:rotate(34deg)}}
+.act-special .kp-head{animation:kp-a-roll-head 2.8s ease-in-out}
+.act-special .kp-rec{animation:kp-a-roll 2.8s cubic-bezier(.4,0,.6,1)}
+.act-special .kp-disc{animation:kp-a-roll-spin 2.8s cubic-bezier(.3,.1,.3,1)}
+.act-special .kp-hand{animation:kp-a-roll-hand 2.8s ease-in-out}
+.act-special .kp-ripple{animation:kp-a-roll-rip 2.8s ease-in-out}
+.act-special .kp-drops{opacity:1}
+.act-special .kp-drop{animation:kp-drop .7s ease-out .3s 3}
+.act-special .kp-drop.d2{animation:kp-drop .7s ease-out .65s 3}
+@keyframes kp-a-roll-head{0%,100%{transform:none}10%,70%{transform:rotate(-5deg)}80%{transform:rotate(3deg) translateY(1px)}}
+@keyframes kp-a-roll{0%,100%{transform:none}14%{transform:translate(-4px,-.4px) rotate(-8deg) scale(1,1.4)}
+  22%{transform:translate(-4.5px,0) rotate(-8deg) scale(1,1.4)}28%{transform:translate(-3.2px,-1.06px) rotate(-5.7deg) scale(1,1.4)}34%{transform:translate(0,-1.5px) rotate(0) scale(1,1.4)}
+  40%{transform:translate(3.2px,-1.06px) rotate(5.7deg) scale(1,1.4)}46%{transform:translate(4.5px,0) rotate(8deg) scale(1,1.4)}52%{transform:translate(3.2px,1.06px) rotate(5.7deg) scale(1,1.4)}
+  58%{transform:translate(0,1.5px) rotate(0) scale(1,1.4)}64%{transform:translate(-3.2px,1.06px) rotate(-5.7deg) scale(1,1.4)}70%{transform:translate(-4.5px,0) rotate(-8deg) scale(1,1.4)}
+  80%{transform:translate(-1.5px,0) rotate(-3deg) scale(1,1.15)}88%{transform:rotate(1deg) scale(1,.95)}}
+@keyframes kp-a-roll-spin{0%{transform:rotate(0)}100%{transform:rotate(-720deg)}}
+@keyframes kp-a-roll-hand{0%,100%{transform:rotate(0)}66%{transform:rotate(0)}76%,84%{transform:rotate(-140deg)}}
+@keyframes kp-a-roll-rip{0%,100%{transform:scale(1)}25%,50%,75%{transform:scale(1.08,1.25)}37%,62%,87%{transform:scale(.97)}}
+.act-bow .kp-act{animation:kp-a-bow 1.4s ease-in-out}
+.act-bow .kp-head{animation:kp-a-bow-head 1.4s ease-in-out}
+.act-bow .kp-hand{animation:kp-a-bow-hand 1.4s ease-in-out}
+.act-bow .kp-rec{animation:kp-a-bow-rec 1.4s ease-in-out}
+.act-bow .kp-blink{animation:kp-a-shut 1.4s ease-in-out}
+@keyframes kp-a-bow{0%,100%{transform:none}32%,66%{transform:scale(1.03,.9)}}
+@keyframes kp-a-bow-head{0%,100%{transform:none}32%,66%{transform:translateY(3.5px) scale(1.02,.94) rotate(2deg)}}
+@keyframes kp-a-bow-hand{0%,100%{transform:rotate(0)}26%,72%{transform:rotate(-140deg)}}
+@keyframes kp-a-bow-rec{0%,100%{transform:none}32%,66%{transform:translateY(-1.2px) rotate(-2deg) scale(1,1.08)}}`});
 })();

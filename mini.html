@@ -1,24 +1,70 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:">
 <title>Music Buddies · now playing</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Outfit:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="mini.css">
 <body>
 <div class="card" id="card">
-  <button class="now" id="open-now" title="Open Music Buddies">
-    <i class="disc" aria-hidden="true"></i>
-    <span class="tx"><b id="t">Nothing on yet</b><span id="s">Tap to open Music Buddies</span></span>
-  </button>
-  <div class="ctl">
-    <button class="ic" id="prev" aria-label="Previous song"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f" d="M12.5 3.2v9.6L5.6 8z"/><path d="M3.5 3.5v9"/></svg></button>
-    <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f i-play" d="M5 2.8v10.4L13.2 8z"/><path class="f i-pause" d="M4 3h3v10H4zM9 3h3v10H9z"/></svg></button>
-    <button class="ic" id="next" aria-label="Next song"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f" d="M3.5 3.2v9.6L10.4 8z"/><path d="M12.5 3.5v9"/></svg></button>
-  </div>
-  <button class="ic open" id="open" aria-label="Open Music Buddies" title="Open Music Buddies">
-    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13.5 2.5L8 8M6.5 3.5H4A1.5 1.5 0 0 0 2.5 5v7A1.5 1.5 0 0 0 4 13.5h7a1.5 1.5 0 0 0 1.5-1.5V9.5"/></svg></button>
+  <!-- the buddy, and the song -->
+  <header class="top">
+    <div class="who">
+      <div class="face" id="face"></div>
+      <div class="nm"><b id="nm">Sara</b><span id="kind">kappa · your music buddy</span></div>
+      <button class="hd" id="open" aria-label="Open the Music Buddies window" title="Open the Music Buddies window">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13.5 2.5L8 8M6.5 3.5H4A1.5 1.5 0 0 0 2.5 5v7A1.5 1.5 0 0 0 4 13.5h7a1.5 1.5 0 0 0 1.5-1.5V9.5"/></svg></button>
+      <button class="hd" id="close" aria-label="Put the banner away" title="Put away (Esc)">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <section class="now" aria-label="Now playing">
+      <i class="disc" aria-hidden="true"></i>
+      <div class="tx"><b id="t">Nothing on yet</b><span id="s">Ask your buddy, or pick a song below</span></div>
+      <div class="ctl">
+        <button class="ic keep" id="keep" aria-label="Save this song to your library" title="Save to your songs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13.5S2.5 10.2 2.5 6.3A2.8 2.8 0 0 1 8 5a2.8 2.8 0 0 1 5.5 1.3c0 3.9-5.5 7.2-5.5 7.2z"/></svg></button>
+        <button class="ic" id="prev" aria-label="Previous song"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f" d="M12.5 3.2v9.6L5.6 8z"/><path d="M3.5 3.5v9"/></svg></button>
+        <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f i-play" d="M5 2.8v10.4L13.2 8z"/><path class="f i-pause" d="M4 3h3v10H4zM9 3h3v10H9z"/></svg></button>
+        <button class="ic" id="next" aria-label="Next song"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="f" d="M3.5 3.2v9.6L10.4 8z"/><path d="M12.5 3.5v9"/></svg></button>
+      </div>
+      <div class="bar"><span id="t0">0:00</span><div class="track" id="track" role="slider" aria-label="Position in the song" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><i id="fill"></i></div><span id="t1">0:00</span></div>
+    </section>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-chat" aria-selected="true" aria-controls="pane-chat">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H8l-3 2.5V11.5H3a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"/></svg>Chat</button>
+    <button role="tab" id="tab-songs" aria-selected="false" aria-controls="pane-songs">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12V3.5l7-1.5V10.5"/><circle cx="4.3" cy="12" r="1.8"/><circle cx="11.3" cy="10.5" r="1.8"/></svg>Songs</button>
+  </nav>
+
+  <!-- talk to the buddy -->
+  <section class="pane" id="pane-chat" role="tabpanel" aria-labelledby="tab-chat">
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div class="quick" id="quick">
+      <button data-say="What's playing?">What’s on?</button>
+      <button data-say="Play something chill">Something chill</button>
+      <button data-say="Surprise me">Surprise me</button>
+      <button data-say="Skip">Skip</button>
+      <button data-say="Play something hype">Hype</button>
+    </div>
+    <form class="say" id="say"><input id="in" autocomplete="off" placeholder="Talk to Sara…" aria-label="Talk to your buddy" maxlength="200">
+      <button class="send" aria-label="Send"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8h10M8.5 3.5L13 8l-4.5 4.5"/></svg></button></form>
+  </section>
+
+  <!-- pick a song from a list -->
+  <section class="pane" id="pane-songs" role="tabpanel" aria-labelledby="tab-songs" hidden>
+    <div class="lists" id="lists" role="radiogroup" aria-label="Playlist"></div>
+    <label class="find"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2L14 14"/></svg>
+      <input id="q" type="search" autocomplete="off" placeholder="Search this list" aria-label="Search songs"></label>
+    <div class="songs" id="songs"></div>
+  </section>
 </div>
+<script src="pets/kit.js"></script>
+<script src="pets/sara.js"></script>
+<script src="pets/kon.js"></script>
+<script src="pets/kasa.js"></script>
+<script src="voices.js"></script>
+<script src="chat.js"></script>
 <script src="mini.js"></script>
 </body>
 </html>
